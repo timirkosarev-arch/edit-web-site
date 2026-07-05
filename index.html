@@ -2,424 +2,392 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web IDE & Toolbox</title>
+    <title>NeverFuse Builder</title>
     <style>
-        /* ================= БАЗОВЫЕ СТИЛИ ================= */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background: #0a0a0a; color: #e5e5e5; height: 100vh; overflow: hidden; }
+        :root { --bg: #0d0d0d; --panel: #141414; --text: #e0e0e0; --accent: #4f46e5; --border: #262626; }
+        body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; height: 100vh; }
+        
+        #builder-mode { display: flex; height: 100vh; width: 100vw; }
+        #sidebar { width: 300px; background: var(--panel); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        #workspace { flex: 1; display: flex; flex-direction: column; }
+        #toolbar { height: 60px; background: var(--panel); display: flex; align-items: center; padding: 0 20px; gap: 15px; border-bottom: 1px solid var(--border); }
+        #editor-container { flex: 1; display: flex; }
+        #monaco-editor { flex: 1; height: 100%; border-right: 1px solid var(--border); }
+        #preview-frame { flex: 1; border: none; background: #fff; }
+        
+        input, button { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 4px; outline: none; }
+        button { background: var(--accent); color: #fff; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { filter: brightness(1.2); }
         .hidden { display: none !important; }
-        input, textarea, button { font-family: inherit; }
-
-        /* ================= ЭКРАН АВТОРИЗАЦИИ ================= */
-        #auth-screen { position: fixed; inset: 0; background: #0a0a0a; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .auth-box { background: #141414; padding: 40px; border-radius: 12px; border: 1px solid #262626; text-align: center; width: 360px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .btn-auth { background: #fff; color: #000; padding: 14px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 25px; font-size: 15px; transition: 0.2s; }
-        .btn-auth:hover { background: #e5e5e5; transform: translateY(-1px); }
-
-        /* ================= ИНТЕРФЕЙС РЕДАКТОРА ================= */
-        #editor-layout { display: flex; height: 100vh; width: 100vw; }
         
-        /* Сайдбар */
-        .sidebar { width: 280px; background: #121212; border-right: 1px solid #262626; display: flex; flex-direction: column; padding: 20px 15px; }
-        .user-profile { display: flex; align-items: center; gap: 12px; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #262626; }
-        .user-profile img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #333; }
+        /* Стили истории и статусов */
+        .history-section { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; flex: 1; overflow-y: auto; }
+        .history-list { list-style: none; padding: 0; margin: 0; }
+        .history-item { background: #1a1a1a; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #333; }
+        .history-header { display: flex; align-items: center; margin-bottom: 8px; }
+        .history-header a { color: #818cf8; text-decoration: none; font-size: 14px; flex: 1; font-weight: bold; }
+        .history-header a:hover { text-decoration: underline; }
         
-        .section-title { font-size: 11px; color: #737373; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 5px rgba(255,255,255,0.1); }
+        .status-online { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .status-offline { background: #ef4444; }
+        .status-restarting { background: #6b7280; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        .site-controls { display: flex; gap: 5px; }
+        .control-btn { background: #262626; border: 1px solid #444; padding: 4px 8px; font-size: 12px; border-radius: 4px; color: #ccc; flex: 1; }
+        .control-btn:hover { background: #333; color: #fff; }
+        .btn-delete:hover { background: #ef4444; border-color: #ef4444; }
+
+        /* --- СТИЛИ ТУЛБОКСА (КАК GITHUB) --- */
+        #toolbox-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .toolbox-window { background: var(--panel); width: 80%; height: 80%; border: 1px solid var(--border); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .toolbox-header { padding: 15px 20px; background: #111; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        .toolbox-content { display: flex; flex: 1; overflow: hidden; }
+        .toolbox-sidebar { width: 300px; border-right: 1px solid var(--border); background: #0a0a0a; overflow-y: auto; padding: 10px; }
+        .toolbox-viewer { flex: 1; display: flex; flex-direction: column; background: var(--bg); padding: 20px; overflow: hidden; }
         
-        /* Вкладки файлов с редактируемым названием */
-        .file-tab { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; margin-bottom: 8px; background: transparent; border-radius: 6px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
-        .file-tab:hover { background: #1a1a1a; }
-        .file-tab.active { background: #1a1a1a; border-color: #3b82f6; }
-        .file-name-input { background: transparent; border: none; color: #fff; font-size: 14px; width: 130px; outline: none; cursor: pointer; }
-        .file-tab.active .file-name-input { cursor: text; }
-        .file-badge { font-size: 10px; font-weight: bold; padding: 3px 6px; border-radius: 4px; background: #262626; color: #a3a3a3; }
-        .file-tab[data-type="html"] .file-badge { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
-        .file-tab[data-type="css"] .file-badge { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
-        .file-tab[data-type="js"] .file-badge { color: #eab308; background: rgba(234, 179, 8, 0.1); }
-
-        /* Кнопки действий */
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-launch { background: #10b981; color: white; margin-top: auto; }
-        .btn-launch:hover { background: #059669; }
-        .btn-toolbox-open { background: #171717; color: #fff; border: 1px solid #333; margin-top: 30px; }
-        .btn-toolbox-open:hover { background: #262626; }
-        .btn-publish { background: #6366f1; color: white; margin-top: 10px; }
-        .btn-publish:hover { background: #4f46e5; }
-
-        /* Рабочая область */
-        .workspace { flex: 1; display: flex; flex-direction: column; background: #0f0f0f; }
-        .workspace-header { padding: 15px 25px; background: #121212; border-bottom: 1px solid #262626; display: flex; justify-content: space-between; align-items: center; }
-        .current-path { color: #737373; font-family: monospace; font-size: 14px; }
-        #universal-editor { flex: 1; width: 100%; background: transparent; color: #e5e5e5; padding: 25px; border: none; outline: none; font-family: 'Consolas', 'Courier New', monospace; font-size: 15px; resize: none; line-height: 1.5; }
-
-        /* ================= МОДАЛЬНЫЕ ОКНА ================= */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background: #141414; padding: 30px; border-radius: 12px; width: 420px; border: 1px solid #262626; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .modal-title { margin-bottom: 20px; font-size: 18px; font-weight: 600; }
-        .input-field { width: 100%; padding: 12px; margin-bottom: 15px; background: #0a0a0a; border: 1px solid #333; color: white; border-radius: 8px; outline: none; transition: border 0.2s; }
-        .input-field:focus { border-color: #6366f1; }
-        .modal-actions { display: flex; gap: 12px; margin-top: 10px; }
-        .btn-cancel { background: #262626; color: white; flex: 1; }
-        .btn-cancel:hover { background: #333; }
-        .btn-confirm { background: #6366f1; color: white; flex: 1; }
-
-        /* ================= ГАЛЕРЕЯ ТУЛБОКСА ================= */
-        #toolbox-view { position: fixed; inset: 0; background: #0a0a0a; z-index: 4000; overflow-y: auto; padding: 40px; }
-        .toolbox-header { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto 30px auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; max-width: 1200px; margin: 0 auto; }
-        .card { background: #141414; border: 1px solid #262626; border-radius: 12px; overflow: hidden; transition: transform 0.2s; }
-        .card:hover { transform: translateY(-3px); border-color: #404040; }
-        .card img { width: 100%; height: 160px; object-fit: cover; border-bottom: 1px solid #262626; background: #000; }
-        .card-body { padding: 20px; }
-        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .card-meta { font-size: 13px; color: #737373; margin-bottom: 15px; }
-        .btn-view-code { width: 100%; padding: 10px; background: #262626; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .btn-view-code:hover { background: #3b82f6; }
+        .tb-item { background: #1a1a1a; border: 1px solid #333; padding: 10px; margin-bottom: 8px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .tb-item:hover, .tb-item.active { border-color: var(--accent); background: #222; }
+        .tb-item-title { font-weight: bold; font-size: 14px; color: #fff; margin-bottom: 4px; }
+        .tb-item-author { font-size: 11px; color: #888; }
+        
+        #tb-code-display { flex: 1; background: #000; color: #00ff00; padding: 15px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 13px; overflow-y: auto; white-space: pre-wrap; border: 1px solid #333; margin-top: 15px; }
+        .tb-viewer-header { display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
-    <div id="auth-screen">
-        <div class="auth-box">
-            <h2>Вход в систему</h2>
-            <p style="color: #737373; font-size: 14px; margin-top: 8px;">Для сохранения и публикации кода</p>
-            <button id="btn-login" class="btn-auth">Войти через Google</button>
-        </div>
-    </div>
-
-    <div id="editor-layout" class="hidden">
-        <div class="sidebar">
-            <div class="user-profile">
-                <img id="user-avatar" src="" alt="avatar">
-                <div style="display: flex; flex-direction: column;">
-                    <span id="user-name" style="font-weight: 600; font-size: 14px;">User</span>
-                    <span style="font-size: 11px; color: #10b981;">Online</span>
-                </div>
-            </div>
-            
-            <div class="section-title">Файлы проекта</div>
-            
-            <div class="file-tab active" data-type="html">
-                <input type="text" class="file-name-input" id="name-html" value="index.html" spellcheck="false">
-                <span class="file-badge">HTML</span>
-            </div>
-            <div class="file-tab" data-type="css">
-                <input type="text" class="file-name-input" id="name-css" value="style.css" spellcheck="false">
-                <span class="file-badge">CSS</span>
-            </div>
-            <div class="file-tab" data-type="js">
-                <input type="text" class="file-name-input" id="name-js" value="script.js" spellcheck="false">
-                <span class="file-badge">JS</span>
-            </div>
-
-            <button id="btn-open-toolbox" class="btn btn-toolbox-open">🧰 Открыть Тулбокс</button>
-            <button id="btn-publish-toolbox" class="btn btn-publish">📤 Поделиться кодом</button>
-            
-            <button id="btn-launch-site" class="btn btn-launch">🚀 Запустить сайт</button>
-        </div>
-
-        <div class="workspace">
-            <div class="workspace-header">
-                <span class="current-path" id="path-display">/project/index.html</span>
-                <span style="font-size: 12px; color: #10b981; display: none;" id="save-status">Сохранено</span>
-            </div>
-            <textarea id="universal-editor" spellcheck="false" placeholder="Пиши код здесь..."></textarea>
-        </div>
-    </div>
-
-    <div id="modal-publish" class="modal-overlay hidden">
-        <div class="modal-content">
-            <div class="modal-title">Опубликовать в Тулбокс</div>
-            <input type="text" id="tb-title" class="input-field" placeholder="Название (напр. Неоновая кнопка)">
-            <input type="text" id="tb-image" class="input-field" placeholder="URL картинки-превью (необязательно)">
-            <div class="modal-actions">
-                <button id="btn-close-publish" class="btn btn-cancel">Отмена</button>
-                <button id="btn-submit-publish" class="btn btn-confirm">Опубликовать</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="toolbox-view" class="hidden">
+<!-- МОДАЛЬНОЕ ОКНО ТУЛБОКСА -->
+<div id="toolbox-modal" class="hidden">
+    <div class="toolbox-window">
         <div class="toolbox-header">
-            <h2>🧰 Тулбокс сообщества</h2>
-            <button id="btn-close-gallery" class="btn btn-cancel" style="width: auto; padding: 10px 20px;">Закрыть галерею</button>
+            <span>📦 NeverFuse Toolbox (Общедоступные коды)</span>
+            <button id="closeToolboxBtn" style="background: transparent; border: 1px solid #444; padding: 4px 10px;">Закрыть</button>
         </div>
-        <div id="toolbox-grid" class="grid"></div>
+        <div class="toolbox-content">
+            <div class="toolbox-sidebar" id="toolboxList">
+                <!-- Сюда грузятся скрипты -->
+                <div style="color: #666; font-size: 13px; text-align: center; margin-top: 20px;">Загрузка...</div>
+            </div>
+            <div class="toolbox-viewer">
+                <div class="tb-viewer-header">
+                    <h2 id="tb-view-title" style="margin: 0; color: #fff;">Выберите код из списка</h2>
+                    <button id="tb-copy-btn" class="hidden" style="background: #10b981;">📋 Скопировать код</button>
+                </div>
+                <div id="tb-view-author" style="color: #888; font-size: 12px; margin-top: 5px;"></div>
+                <pre id="tb-code-display"></pre>
+            </div>
+        </div>
     </div>
+</div>
 
-    <script type="module">
-        // --- ВСТАВЬ СВОИ ДАННЫЕ СЮДА ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-firestore.js";
+<div id="builder-mode">
+    <div id="sidebar">
+        <h2 style="margin-top:0;">Web IDE</h2>
+        <button id="loginBtn">Войти через Google</button>
+        <div id="userInfo" class="hidden">
+            <span style="color:#888; font-size: 12px;">Аккаунт:</span><br>
+            <span id="userName" style="color:#fff; font-weight: bold;"></span>
+        </div>
+        
+        <button id="openToolboxBtn" class="hidden" style="margin-top: 15px; background: #222; border: 1px solid #444; width: 100%;">📦 Открыть Тулбокс</button>
+        
+        <!-- Блок Истории -->
+        <div id="historyBlock" class="history-section hidden">
+            <h3 style="font-size: 14px; color: #888; margin-top: 0; display: flex; justify-content: space-between;">
+                МОИ САЙТЫ <button id="refreshHistoryBtn" style="padding: 2px 6px; font-size: 10px; background: transparent; border: 1px solid #444;">Обновить</button>
+            </h3>
+            <ul id="historyList" class="history-list"></ul>
+        </div>
+    </div>
+    
+    <div id="workspace">
+        <div id="toolbar">
+            <input type="text" id="siteNameInput" placeholder="Имя сайта (например: mygame)">
+            <button id="testBtn">Локальный тест</button>
+            <button id="publishBtn">Сохранить</button>
+            <div style="width: 2px; height: 30px; background: #333; margin: 0 5px;"></div>
+            <button id="shareToToolboxBtn" style="background: #059669;">Поделиться в Тулбокс</button>
+        </div>
+        <div id="editor-container">
+            <div id="monaco-editor"></div>
+            <iframe id="preview-frame"></iframe>
+        </div>
+    </div>
+</div>
 
-        const firebaseConfig = {
-            apiKey: "ТВОЙ_API_KEY",
-            authDomain: "ТВОЙ_ПРОЕКТ.firebaseapp.com",
-            projectId: "ТВОЙ_ПРОЕКТ",
-            storageBucket: "ТВОЙ_ПРОЕКТ.appspot.com",
-            messagingSenderId: "ТВОЙ_ID",
-            appId: "ТВОЙ_APP_ID"
-        };
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        let currentUser = null;
+<script type="module">
+    import { firebaseConfig } from './config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    // Добавили addDoc для генерации случайных ID в тулбоксе
+    import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, deleteDoc, updateDoc, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Данные текущего проекта (Код + Названия файлов)
-        const projectData = {
-            html: { name: "index.html", code: "<h1>Hello World</h1>\n<p>Сайт готов к разработке</p>" },
-            css:  { name: "style.css", code: "body {\n  background: #111;\n  color: #fff;\n  font-family: sans-serif;\n  padding: 20px;\n}" },
-            js:   { name: "script.js", code: "console.log('Скрипт работает!');" }
-        };
-        let currentType = 'html'; // Текущая открытая вкладка
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        const editor = document.getElementById('universal-editor');
-        const pathDisplay = document.getElementById('path-display');
+    const path = window.location.pathname;
+    
+    if (path.startsWith('/site/')) {
+        document.getElementById('builder-mode').style.display = 'none';
+        const siteName = path.split('/').pop();
+        if (siteName) loadSiteFromDatabase(siteName);
+    } else {
+        initBuilder();
+    }
 
-        // ==========================================
-        // МАРШРУТИЗАЦИЯ (ROUTING)
-        // ==========================================
-        const path = window.location.pathname;
-        if (path.startsWith('/site/')) {
-            renderReadySite(path.split('/')[2]);
-        } else if (path.startsWith('/toolbox/')) {
-            renderSnippetReader(path.split('/')[2]);
+    async function loadSiteFromDatabase(name) {
+        const siteRef = doc(db, "published_sites", name);
+        const docSnap = await getDoc(siteRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.status === 'offline') {
+                document.body.innerHTML = `<div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0d0d0d; color: #fff; font-family: sans-serif;"><h1 style="color: #ef4444;">Сайт выключен</h1></div>`;
+            } else if (data.status === 'restarting') {
+                document.body.innerHTML = `<div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0d0d0d; color: #fff; font-family: sans-serif;"><h1 style="color: #6b7280; animation: pulse 1s infinite;">Перезагрузка...</h1></div>`;
+                setTimeout(() => location.reload(), 3000);
+            } else {
+                document.open();
+                document.write(data.code);
+                document.close();
+            }
         } else {
-            initApp();
+            document.body.innerHTML = "<h1 style='color:red; text-align:center; font-family:sans-serif;'>Ошибка 404: Сайт не найден</h1>";
         }
+    }
 
-        // ==========================================
-        // ИНИЦИАЛИЗАЦИЯ И АВТОРИЗАЦИЯ
-        // ==========================================
-        function initApp() {
-            document.getElementById('btn-login').addEventListener('click', () => {
-                signInWithPopup(auth, new GoogleAuthProvider()).catch(e => alert(e.message));
-            });
+    function initBuilder() {
+        let currentUser = null;
+        let currentToolboxCode = ""; // Хранит код выбранного сниппета
 
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    document.getElementById('auth-screen').classList.add('hidden');
-                    document.getElementById('editor-layout').classList.remove('hidden');
-                    document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/36';
-                    document.getElementById('user-name').innerText = user.displayName;
-                    
-                    // Загружаем стартовый код
-                    editor.value = projectData[currentType].code;
-                    updatePathDisplay();
-                } else {
-                    document.getElementById('auth-screen').classList.remove('hidden');
-                    document.getElementById('editor-layout').classList.add('hidden');
-                }
-            });
-        }
-
-        // ==========================================
-        // ЛОГИКА РЕДАКТОРА И ПЕРЕКЛЮЧЕНИЯ ФАЙЛОВ
-        // ==========================================
-        function updatePathDisplay() {
-            pathDisplay.innerText = `/project/${projectData[currentType].name}`;
-        }
-
-        // Сохранение кода при вводе
-        editor.addEventListener('input', () => {
-            projectData[currentType].code = editor.value;
-        });
-
-        // Отслеживание изменения названий файлов в сайдбаре
-        document.querySelectorAll('.file-name-input').forEach(input => {
-            input.addEventListener('input', (e) => {
-                const type = e.target.closest('.file-tab').dataset.type;
-                projectData[type].name = e.target.value.trim();
-                if (type === currentType) updatePathDisplay();
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            window.editor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                value: '<!DOCTYPE html>\n<html>\n<head>\n  <title>Новый проект</title>\n</head>\n<body>\n  <h1>Привет!</h1>\n</body>\n</html>',
+                language: 'html',
+                theme: 'vs-dark',
+                automaticLayout: true
             });
         });
 
-        // Переключение между вкладками
-        document.querySelectorAll('.file-tab').forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                if(e.target.tagName === 'INPUT') return; // Не переключаем, если кликнули по вводу имени
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            signInWithPopup(auth, new GoogleAuthProvider()).catch(err => alert(err.message));
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginBtn').classList.add('hidden');
+                document.getElementById('userInfo').classList.remove('hidden');
+                document.getElementById('historyBlock').classList.remove('hidden');
+                document.getElementById('openToolboxBtn').classList.remove('hidden');
+                document.getElementById('userName').innerText = user.displayName;
                 
-                document.querySelectorAll('.file-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                
-                currentType = tab.dataset.type;
-                editor.value = projectData[currentType].code;
-                updatePathDisplay();
-            });
+                loadUserHistory(user.uid);
+            }
         });
 
-        // ==========================================
-        // ЗАПУСК И РЕНДЕР САЙТА (РЕДИРЕКТ)
-        // ==========================================
-        document.getElementById('btn-launch-site').addEventListener('click', async () => {
-            const btn = document.getElementById('btn-launch-site');
-            btn.innerText = "⏳ Запуск...";
+        /* --- ЛОГИКА ТУЛБОКСА --- */
+        const toolboxModal = document.getElementById('toolbox-modal');
+        
+        // Открыть тулбокс
+        document.getElementById('openToolboxBtn').addEventListener('click', () => {
+            toolboxModal.classList.remove('hidden');
+            loadToolboxSnippets();
+        });
+
+        // Закрыть тулбокс
+        document.getElementById('closeToolboxBtn').addEventListener('click', () => {
+            toolboxModal.classList.add('hidden');
+        });
+
+        // Опубликовать текущий код в тулбокс
+        document.getElementById('shareToToolboxBtn').addEventListener('click', async () => {
+            if (!currentUser) return alert("Войдите в аккаунт!");
             
-            try {
-                const docRef = await addDoc(collection(db, "projects"), {
-                    files: projectData, // Сохраняем объект с кодом и кастомными именами
-                    ownerId: currentUser.uid,
-                    createdAt: serverTimestamp()
-                });
-                // Жесткий редирект на готовый сайт
-                window.location.href = `/site/${docRef.id}`;
-            } catch (e) {
-                alert("Ошибка сохранения: " + e.message);
-                btn.innerText = "🚀 Запустить сайт";
-            }
-        });
-
-        async function renderReadySite(id) {
-            document.body.innerHTML = '<div style="color: #fff; text-align: center; margin-top: 45vh; font-family: sans-serif;">Сборка сайта...</div>';
-            try {
-                const docSnap = await getDoc(doc(db, "projects", id));
-                if (docSnap.exists()) {
-                    const data = docSnap.data().files;
-                    // Склеиваем код. Файлы могут называться как угодно, но мы берем их по ключам типа (html, css, js)
-                    const htmlCode = data.html ? data.html.code : '';
-                    const cssCode = data.css ? data.css.code : '';
-                    const jsCode = data.js ? data.js.code : '';
-
-                    const finalHTML = `
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <meta charset="utf-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <style>${cssCode}</style>
-                        </head>
-                        <body>
-                            ${htmlCode}
-                            <script>${jsCode}<\/script>
-                        </body>
-                        </html>
-                    `;
-                    document.open();
-                    document.write(finalHTML);
-                    document.close();
-                } else {
-                    document.body.innerHTML = '<h1 style="color:#ef4444; text-align:center; margin-top:45vh; font-family: sans-serif;">404 - Проект не найден</h1>';
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        // ==========================================
-        // ТУЛБОКС (ПУБЛИКАЦИЯ И ГАЛЕРЕЯ)
-        // ==========================================
-        const modalPublish = document.getElementById('modal-publish');
-        const galleryView = document.getElementById('toolbox-view');
-
-        // Открытие модалки публикации
-        document.getElementById('btn-publish-toolbox').addEventListener('click', () => {
-            modalPublish.classList.remove('hidden');
-        });
-        document.getElementById('btn-close-publish').addEventListener('click', () => {
-            modalPublish.classList.add('hidden');
-        });
-
-        // Отправка в Тулбокс
-        document.getElementById('btn-submit-publish').addEventListener('click', async () => {
-            const title = document.getElementById('tb-title').value.trim();
-            const imageUrl = document.getElementById('tb-image').value.trim() || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80";
-            const currentCode = projectData[currentType].code;
-            const currentFileName = projectData[currentType].name;
-
-            if(!title || !currentCode) return alert("Введите название и убедитесь, что код не пустой.");
+            const title = prompt("Введите понятное название для этого кода (например: 'Кнопка с анимацией'):");
+            if (!title) return;
 
             try {
-                const docRef = await addDoc(collection(db, "toolbox"), {
+                await addDoc(collection(db, "toolbox"), {
                     title: title,
-                    type: currentType,
-                    fileName: currentFileName,
-                    code: currentCode,
-                    imageUrl: imageUrl,
-                    authorName: currentUser.displayName,
-                    createdAt: serverTimestamp()
+                    code: window.editor.getValue(),
+                    author: currentUser.displayName,
+                    authorId: currentUser.uid,
+                    timestamp: new Date()
                 });
-                alert("Успешно! Ссылка скопирована.");
-                navigator.clipboard.writeText(`${window.location.origin}/toolbox/${docRef.id}`);
-                modalPublish.classList.add('hidden');
-            } catch(e) {
-                alert("Ошибка публикации: " + e.message);
+                alert("Код успешно добавлен в Тулбокс!");
+            } catch (error) {
+                alert("Ошибка публикации: " + error.message);
             }
         });
 
-        // Открытие галереи
-        document.getElementById('btn-open-toolbox').addEventListener('click', async () => {
-            document.getElementById('editor-layout').classList.add('hidden');
-            galleryView.classList.remove('hidden');
-            
-            const grid = document.getElementById('toolbox-grid');
-            grid.innerHTML = '<p style="color: #a3a3a3;">Загрузка сниппетов...</p>';
+        // Загрузка списка кодов из базы
+        async function loadToolboxSnippets() {
+            const listEl = document.getElementById('toolboxList');
+            listEl.innerHTML = '<div style="color: #666; text-align: center;">Загрузка...</div>';
             
             try {
-                const querySnapshot = await getDocs(collection(db, "toolbox"));
-                grid.innerHTML = '';
+                // Получаем все документы из коллекции toolbox
+                const q = query(collection(db, "toolbox"));
+                const querySnapshot = await getDocs(q);
+                
+                listEl.innerHTML = '';
+                if(querySnapshot.empty) {
+                    listEl.innerHTML = '<div style="color: #666; text-align: center;">Тулбокс пока пуст.</div>';
+                    return;
+                }
+
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
-                    grid.innerHTML += `
-                        <div class="card">
-                            <img src="${data.imageUrl}" alt="preview">
-                            <div class="card-body">
-                                <div class="card-title">
-                                    <span>${data.title}</span>
-                                    <span style="font-size: 11px; background: #262626; padding: 2px 6px; border-radius: 4px; color: #a3a3a3;">${data.fileName}</span>
-                                </div>
-                                <div class="card-meta">👤 ${data.authorName}</div>
-                                <button onclick="window.open('/toolbox/${docSnap.id}', '_blank')" class="btn-view-code">Смотреть код</button>
-                            </div>
-                        </div>
+                    
+                    const item = document.createElement('div');
+                    item.className = 'tb-item';
+                    item.innerHTML = `
+                        <div class="tb-item-title">${data.title}</div>
+                        <div class="tb-item-author">От: ${data.author || 'Неизвестный'}</div>
                     `;
-                });
-            } catch(e) {
-                grid.innerHTML = '<p style="color: #ef4444;">Ошибка загрузки базы данных.</p>';
-            }
-        });
-
-        document.getElementById('btn-close-gallery').addEventListener('click', () => {
-            galleryView.classList.add('hidden');
-            document.getElementById('editor-layout').classList.remove('hidden');
-        });
-
-        // Ридер конкретного сниппета (по прямой ссылке)
-        async function renderSnippetReader(id) {
-            document.body.innerHTML = '<div style="color:#fff; text-align:center; margin-top: 45vh; font-family: sans-serif;">Загрузка сниппета...</div>';
-            try {
-                const docSnap = await getDoc(doc(db, "toolbox", id));
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.body.innerHTML = `
-                        <div style="max-width: 900px; margin: 50px auto; padding: 30px; background: #141414; border-radius: 12px; border: 1px solid #262626; font-family: sans-serif; color: #fff;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #262626; padding-bottom: 20px; margin-bottom: 25px;">
-                                <div>
-                                    <h1 style="font-size: 24px; margin-bottom: 8px;">${data.title}</h1>
-                                    <span style="color: #a3a3a3; font-size: 14px;">Файл: <b>${data.fileName}</b> | Автор: ${data.authorName}</span>
-                                </div>
-                                <button id="copy-snippet-btn" style="padding: 12px 24px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">📋 Копировать код</button>
-                            </div>
-                            <img src="${data.imageUrl}" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 25px; border: 1px solid #262626;">
-                            <textarea readonly style="width: 100%; height: 350px; background: #0a0a0a; color: #e5e5e5; padding: 20px; border: 1px solid #262626; border-radius: 8px; font-family: 'Consolas', monospace; font-size: 15px; resize: vertical; outline: none;">${data.code}</textarea>
-                        </div>
-                    `;
-                    document.getElementById('copy-snippet-btn').addEventListener('click', (e) => {
-                        navigator.clipboard.writeText(data.code);
-                        e.target.innerText = "✅ Скопировано!";
-                        e.target.style.background = "#059669";
-                        setTimeout(() => { e.target.innerText = "📋 Копировать код"; e.target.style.background = "#10b981"; }, 2000);
+                    
+                    // При клике показываем код справа
+                    item.addEventListener('click', () => {
+                        // Убираем подсветку со всех
+                        document.querySelectorAll('.tb-item').forEach(el => el.classList.remove('active'));
+                        item.classList.add('active');
+                        
+                        document.getElementById('tb-view-title').innerText = data.title;
+                        document.getElementById('tb-view-author').innerText = `Автор: ${data.author || 'Неизвестный'}`;
+                        document.getElementById('tb-code-display').innerText = data.code;
+                        currentToolboxCode = data.code;
+                        document.getElementById('tb-copy-btn').classList.remove('hidden');
                     });
-                } else {
-                    document.body.innerHTML = '<h1 style="color:#ef4444; text-align:center; margin-top:45vh; font-family: sans-serif;">Сниппет удален или не существует</h1>';
-                }
-            } catch(e) {
-                console.error(e);
+                    
+                    listEl.appendChild(item);
+                });
+            } catch (err) {
+                listEl.innerHTML = '<div style="color: red;">Ошибка загрузки</div>';
+                console.error(err);
             }
         }
-    </script>
+
+        // Копирование кода
+        document.getElementById('tb-copy-btn').addEventListener('click', () => {
+            navigator.clipboard.writeText(currentToolboxCode).then(() => {
+                const btn = document.getElementById('tb-copy-btn');
+                btn.innerText = "✅ Скопировано!";
+                setTimeout(() => btn.innerText = "📋 Скопировать код", 2000);
+            });
+        });
+        /* --- КОНЕЦ ЛОГИКИ ТУЛБОКСА --- */
+
+        // (Здесь остается старый код публикации и истории)
+        document.getElementById('refreshHistoryBtn').addEventListener('click', () => {
+            if (currentUser) loadUserHistory(currentUser.uid);
+        });
+
+        async function loadUserHistory(uid) {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '<span style="color:#666; font-size:12px;">Загрузка...</span>'; 
+            const q = query(collection(db, "published_sites"), where("ownerId", "==", uid));
+            const querySnapshot = await getDocs(q);
+            historyList.innerHTML = '';
+            
+            querySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const siteName = docSnap.id;
+                const status = data.status || 'online';
+                
+                let dotClass = 'status-online';
+                if (status === 'offline') dotClass = 'status-offline';
+                if (status === 'restarting') dotClass = 'status-restarting';
+
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.innerHTML = `
+                    <div class="history-header">
+                        <span class="status-dot ${dotClass}" title="Статус: ${status}"></span>
+                        <a href="/site/${siteName}" target="_blank">/${siteName}</a>
+                    </div>
+                    <div class="site-controls">
+                        <button class="control-btn" data-action="edit" data-id="${siteName}">✏️ Код</button>
+                        <button class="control-btn" data-action="power" data-id="${siteName}" data-status="${status}">${status === 'offline' ? '▶️ Вкл' : '⏸️ Выкл'}</button>
+                        <button class="control-btn" data-action="restart" data-id="${siteName}">🔄</button>
+                        <button class="control-btn btn-delete" data-action="delete" data-id="${siteName}">🗑️</button>
+                    </div>
+                `;
+                historyList.appendChild(li);
+            });
+            attachControlEvents();
+        }
+
+        function attachControlEvents() {
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const action = e.target.getAttribute('data-action');
+                    const siteName = e.target.getAttribute('data-id');
+                    const siteRef = doc(db, "published_sites", siteName);
+
+                    if (action === 'edit') {
+                        const snap = await getDoc(siteRef);
+                        if(snap.exists()) {
+                            window.editor.setValue(snap.data().code);
+                            document.getElementById('siteNameInput').value = siteName;
+                        }
+                    } else if (action === 'power') {
+                        const currentStatus = e.target.getAttribute('data-status');
+                        const newStatus = currentStatus === 'offline' ? 'online' : 'offline';
+                        await updateDoc(siteRef, { status: newStatus });
+                        loadUserHistory(currentUser.uid);
+                    } else if (action === 'restart') {
+                        await updateDoc(siteRef, { status: 'restarting' });
+                        loadUserHistory(currentUser.uid);
+                        setTimeout(async () => {
+                            await updateDoc(siteRef, { status: 'online' });
+                            loadUserHistory(currentUser.uid);
+                        }, 3000);
+                    } else if (action === 'delete') {
+                        if (confirm(`Удалить сайт ${siteName}?`)) {
+                            await deleteDoc(siteRef);
+                            loadUserHistory(currentUser.uid);
+                            if (document.getElementById('siteNameInput').value === siteName) {
+                                document.getElementById('siteNameInput').value = '';
+                                window.editor.setValue('<!-- Сайт удален -->');
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        document.getElementById('testBtn').addEventListener('click', () => {
+            document.getElementById('preview-frame').srcdoc = window.editor.getValue();
+        });
+
+        document.getElementById('publishBtn').addEventListener('click', async () => {
+            if (!currentUser) return alert("Войдите в аккаунт!");
+            const siteName = document.getElementById('siteNameInput').value.trim();
+            if (!siteName || siteName.includes('/')) return alert("Введите корректное имя!");
+
+            const siteRef = doc(db, "published_sites", siteName);
+            const docSnap = await getDoc(siteRef);
+            
+            if (docSnap.exists()) {
+                if (docSnap.data().ownerId !== currentUser.uid) {
+                    return alert("Это имя занято другим пользователем!");
+                }
+                await updateDoc(siteRef, { code: window.editor.getValue(), lastEdited: new Date() });
+                alert("Изменения сохранены!");
+            } else {
+                await setDoc(siteRef, { ownerId: currentUser.uid, code: window.editor.getValue(), status: 'online', timestamp: new Date() });
+                alert("Сайт успешно создан!");
+            }
+            loadUserHistory(currentUser.uid);
+        });
+    }
+</script>
 </body>
 </html>
