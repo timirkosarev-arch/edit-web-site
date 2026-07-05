@@ -2,98 +2,113 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>NeverFuse Builder</title>
+    <title>WED EDITOR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/webp" href="https://imgfy.ru/ib/HkMiw4FtBh0vpkM_1783257687.webp">
     <style>
         :root { --bg: #0d0d0d; --panel: #141414; --text: #e0e0e0; --accent: #4f46e5; --border: #262626; }
         body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; height: 100vh; }
         
-        #builder-mode { display: flex; height: 100vh; width: 100vw; }
-        #sidebar { width: 300px; background: var(--panel); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        #workspace { flex: 1; display: flex; flex-direction: column; }
-        #toolbar { height: 60px; background: var(--panel); display: flex; align-items: center; padding: 0 20px; gap: 15px; border-bottom: 1px solid var(--border); }
-        #editor-container { flex: 1; display: flex; }
-        #monaco-editor { flex: 1; height: 100%; border-right: 1px solid var(--border); }
-        #preview-frame { flex: 1; border: none; background: #fff; }
+        #builder-mode { display: none; height: 100vh; width: 100vw; flex-direction: row; }
+        #sidebar { width: 300px; background: var(--panel); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; box-sizing: border-box; }
+        #workspace { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        #toolbar { height: 60px; background: var(--panel); display: flex; align-items: center; padding: 0 20px; gap: 15px; border-bottom: 1px solid var(--border); box-sizing: border-box; }
         
-        input, button { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 4px; outline: none; }
-        button { background: var(--accent); color: #fff; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        #editor-container { flex: 1; display: flex; overflow: hidden; position: relative; }
+        #monaco-editor { flex: 1; height: 100%; }
+        
+        input, button { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 4px; outline: none; font-size: 14px; }
+        button { background: var(--accent); color: #fff; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
         button:hover { filter: brightness(1.2); }
+        button:disabled { background: #333 !important; color: #666 !important; cursor: not-allowed; }
         .hidden { display: none !important; }
         
-        /* Стили истории и статусов */
-        .history-section { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; flex: 1; overflow-y: auto; }
+        .project-section { margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
+        .files-list { list-style: none; padding: 0; margin: 10px 0 0 0; max-height: 150px; overflow-y: auto; }
+        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: #1a1a1a; border: 1px solid #262626; border-radius: 4px; margin-bottom: 5px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .file-item:hover { border-color: #444; }
+        .file-item.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .file-delete-btn { background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 16px; padding: 0 4px; line-height: 1; }
+        .file-delete-btn:hover { color: #f87171; }
+
+        .history-section { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; flex: 1; overflow-y: auto; padding-bottom: 40px; }
         .history-list { list-style: none; padding: 0; margin: 0; }
-        .history-item { background: #1a1a1a; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #333; }
-        .history-header { display: flex; align-items: center; margin-bottom: 8px; }
-        .history-header a { color: #818cf8; text-decoration: none; font-size: 14px; flex: 1; font-weight: bold; }
+        .history-item { background: #1a1a1a; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #333; position: relative; }
+        .history-header { display: flex; align-items: center; justify-content: space-between; }
+        .history-header-left { display: flex; align-items: center; flex: 1; }
+        .history-header a { color: #818cf8; text-decoration: none; font-size: 14px; font-weight: bold; }
         .history-header a:hover { text-decoration: underline; }
         
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 5px rgba(255,255,255,0.1); }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
         .status-online { background: #10b981; box-shadow: 0 0 8px #10b981; }
         .status-offline { background: #ef4444; }
         .status-restarting { background: #6b7280; animation: pulse 1s infinite; }
+        
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
-        .site-controls { display: flex; gap: 5px; }
-        .control-btn { background: #262626; border: 1px solid #444; padding: 4px 8px; font-size: 12px; border-radius: 4px; color: #ccc; flex: 1; }
-        .control-btn:hover { background: #333; color: #fff; }
-        .btn-delete:hover { background: #ef4444; border-color: #ef4444; }
+        .menu-container { position: relative; display: inline-block; }
+        .dots-btn { background: transparent; color: #888; border: none; font-size: 20px; font-weight: bold; padding: 0 5px; cursor: pointer; line-height: 1; }
+        .dots-btn:hover { color: #fff; }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 100%; background: #262626; border: 1px solid #444; border-radius: 4px; min-width: 160px; z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .dropdown-content button { display: block; width: 100%; text-align: left; padding: 8px 12px; background: transparent; border: none; border-bottom: 1px solid #333; color: #ccc; font-size: 13px; font-weight: normal; border-radius: 0; }
+        .dropdown-content button:last-child { border-bottom: none; }
+        .dropdown-content button:hover { background: #333; color: #fff; }
+        .btn-delete:hover { background: #ef4444 !important; color: #fff !important; }
+        .show { display: block !important; }
 
-        /* --- СТИЛИ ТУЛБОКСА (КАК GITHUB) --- */
-        #toolbox-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .toolbox-window { background: var(--panel); width: 80%; height: 80%; border: 1px solid var(--border); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .toolbox-header { padding: 15px 20px; background: #111; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-        .toolbox-content { display: flex; flex: 1; overflow: hidden; }
-        .toolbox-sidebar { width: 300px; border-right: 1px solid var(--border); background: #0a0a0a; overflow-y: auto; padding: 10px; }
-        .toolbox-viewer { flex: 1; display: flex; flex-direction: column; background: var(--bg); padding: 20px; overflow: hidden; }
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: #1f1f1f; color: #fff; padding: 12px 20px; border-radius: 6px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 14px; font-weight: 500; min-width: 240px; max-width: 350px; pointer-events: auto; animation: slideIn 0.3s ease forwards; border-left: 4px solid var(--accent); display: flex; align-items: center; }
+        .toast-success { border-left-color: #10b981; }
+        .toast-error { border-left-color: #ef4444; }
+        .toast-loading { border-left-color: #3b82f6; }
         
-        .tb-item { background: #1a1a1a; border: 1px solid #333; padding: 10px; margin-bottom: 8px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
-        .tb-item:hover, .tb-item.active { border-color: var(--accent); background: #222; }
-        .tb-item-title { font-weight: bold; font-size: 14px; color: #fff; margin-bottom: 4px; }
-        .tb-item-author { font-size: 11px; color: #888; }
+        .spinner { border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; border-top: 2px solid #fff; width: 14px; height: 14px; animation: spin 0.8s linear infinite; display: inline-block; margin-right: 10px; flex-shrink: 0; }
         
-        #tb-code-display { flex: 1; background: #000; color: #00ff00; padding: 15px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 13px; overflow-y: auto; white-space: pre-wrap; border: 1px solid #333; margin-top: 15px; }
-        .tb-viewer-header { display: flex; justify-content: space-between; align-items: center; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+
+        .mobile-only { display: none !important; }
+        #sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 98; }
+
+        @media (max-width: 768px) {
+            .mobile-only { display: inline-flex !important; }
+            #sidebar { position: fixed; top: 0; left: -320px; width: 280px; height: 100vh; z-index: 99; transition: left 0.3s ease; box-shadow: 5px 0 15px rgba(0,0,0,0.5); box-sizing: border-box; }
+            #sidebar.open { left: 0; }
+            #sidebar-overlay.open { display: block; }
+            #toolbar { height: auto; padding: 10px; flex-wrap: wrap; gap: 8px; }
+            #siteNameInput, #sitePasswordInput { flex: 1 1 100%; width: 100%; font-size: 16px; padding: 10px; }
+            #toolbar button, #toolbar .menu-container { flex: 1; }
+            #toolbar .menu-container button { width: 100%; }
+        }
     </style>
 </head>
 <body>
 
-<!-- МОДАЛЬНОЕ ОКНО ТУЛБОКСА -->
-<div id="toolbox-modal" class="hidden">
-    <div class="toolbox-window">
-        <div class="toolbox-header">
-            <span>📦 NeverFuse Toolbox (Общедоступные коды)</span>
-            <button id="closeToolboxBtn" style="background: transparent; border: 1px solid #444; padding: 4px 10px;">Закрыть</button>
-        </div>
-        <div class="toolbox-content">
-            <div class="toolbox-sidebar" id="toolboxList">
-                <!-- Сюда грузятся скрипты -->
-                <div style="color: #666; font-size: 13px; text-align: center; margin-top: 20px;">Загрузка...</div>
-            </div>
-            <div class="toolbox-viewer">
-                <div class="tb-viewer-header">
-                    <h2 id="tb-view-title" style="margin: 0; color: #fff;">Выберите код из списка</h2>
-                    <button id="tb-copy-btn" class="hidden" style="background: #10b981;">📋 Скопировать код</button>
-                </div>
-                <div id="tb-view-author" style="color: #888; font-size: 12px; margin-top: 5px;"></div>
-                <pre id="tb-code-display"></pre>
-            </div>
-        </div>
-    </div>
-</div>
+<div id="sidebar-overlay"></div>
+<div id="toast-container"></div>
 
 <div id="builder-mode">
     <div id="sidebar">
-        <h2 style="margin-top:0;">Web IDE</h2>
+        <h2 style="margin-top:0; display: flex; align-items: center; gap: 10px;">
+            <img src="https://imgfy.ru/ib/HkMiw4FtBh0vpkM_1783257687.webp" alt="Logo" style="width: 28px; height: 28px; object-fit: cover; border-radius: 4px;">
+            WED EDITOR
+        </h2>
         <button id="loginBtn">Войти через Google</button>
         <div id="userInfo" class="hidden">
             <span style="color:#888; font-size: 12px;">Аккаунт:</span><br>
             <span id="userName" style="color:#fff; font-weight: bold;"></span>
         </div>
         
-        <button id="openToolboxBtn" class="hidden" style="margin-top: 15px; background: #222; border: 1px solid #444; width: 100%;">📦 Открыть Тулбокс</button>
+        <div class="project-section">
+            <h3 style="font-size: 14px; color: #888; margin-top: 0;">ФАЙЛЫ ПРОЕКТА</h3>
+            <div style="display: flex; gap: 6px;">
+                <input type="text" id="newFileName" placeholder="style.css или script.js" style="flex:1; padding: 6px; font-size: 12px;">
+                <button id="createFileBtn" style="padding: 6px 10px; font-size: 12px;">+</button>
+            </div>
+            <ul id="filesList" class="files-list"></ul>
+        </div>
         
-        <!-- Блок Истории -->
         <div id="historyBlock" class="history-section hidden">
             <h3 style="font-size: 14px; color: #888; margin-top: 0; display: flex; justify-content: space-between;">
                 МОИ САЙТЫ <button id="refreshHistoryBtn" style="padding: 2px 6px; font-size: 10px; background: transparent; border: 1px solid #444;">Обновить</button>
@@ -104,15 +119,25 @@
     
     <div id="workspace">
         <div id="toolbar">
-            <input type="text" id="siteNameInput" placeholder="Имя сайта (например: mygame)">
-            <button id="testBtn">Локальный тест</button>
+            <button id="toggleSidebarBtn" class="mobile-only" style="background: var(--panel); border: 1px solid var(--border);">☰</button>
+            <input type="text" id="siteNameInput" placeholder="Имя сайта">
+            <input type="password" id="sitePasswordInput" placeholder="Защитить паролем (опционально)">
+            
+            <div class="menu-container">
+                <button id="libBtn" style="background: #1e1b4b; border: 1px solid #312e81;">Библиотеки ▾</button>
+                <div id="libDropdown" class="dropdown-content" style="right: auto; left: 0; min-width: 180px;">
+                    <button class="lib-item" data-cdn='<script src="https://cdn.tailwindcss.com"></script>'>Tailwind CSS</button>
+                    <button class="lib-item" data-cdn='<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">'>Bootstrap 5</button>
+                    <button class="lib-item" data-cdn='<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">'>FontAwesome (Иконки)</button>
+                    <button class="lib-item" data-cdn='<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>'>jQuery</button>
+                </div>
+            </div>
+
+            <button id="testBtn">Тест</button>
             <button id="publishBtn">Сохранить</button>
-            <div style="width: 2px; height: 30px; background: #333; margin: 0 5px;"></div>
-            <button id="shareToToolboxBtn" style="background: #059669;">Поделиться в Тулбокс</button>
         </div>
         <div id="editor-container">
             <div id="monaco-editor"></div>
-            <iframe id="preview-frame"></iframe>
         </div>
     </div>
 </div>
@@ -120,63 +145,290 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
 
 <script type="module">
-    import { firebaseConfig } from './config.js';
+    import { firebaseConfig } from '/config.js'; 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    // Добавили addDoc для генерации случайных ID в тулбоксе
-    import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, deleteDoc, updateDoc, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, deleteDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    let projectFiles = {
+        "index.html": "<!DOCTYPE html>\n<html>\n<head>\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Новый проект</title>\n</head>\n<body>\n  <h1>Привет!</h1>\n</body>\n</html>"
+    };
+    let currentFileName = "index.html";
+
+    window.showToast = function(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerText = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.3s ease forwards';
+            toast.addEventListener('animationend', () => toast.remove());
+        }, 3000);
+    }
+
+    function renderFilesList() {
+        const list = document.getElementById('filesList');
+        list.innerHTML = '';
+        Object.keys(projectFiles).forEach(name => {
+            const li = document.createElement('li');
+            li.className = `file-item ${name === currentFileName ? 'active' : ''}`;
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.innerText = name;
+            nameSpan.style.flex = "1";
+            nameSpan.addEventListener('click', () => switchFile(name));
+            li.appendChild(nameSpan);
+
+            if (name !== 'index.html') {
+                const del = document.createElement('button');
+                del.className = 'file-delete-btn';
+                del.innerHTML = '×';
+                del.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if(confirm(`Удалить файл ${name}?`)) {
+                        delete projectFiles[name];
+                        if (currentFileName === name) currentFileName = 'index.html';
+                        renderFilesList();
+                        window.editor.setValue(projectFiles[currentFileName]);
+                        updateEditorLanguage(currentFileName);
+                    }
+                });
+                li.appendChild(del);
+            }
+            list.appendChild(li);
+        });
+    }
+
+    function switchFile(name) {
+        if(window.editor) {
+            projectFiles[currentFileName] = window.editor.getValue();
+        }
+        currentFileName = name;
+        window.editor.setValue(projectFiles[currentFileName]);
+        updateEditorLanguage(name);
+        renderFilesList();
+    }
+
+    function updateEditorLanguage(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        let lang = 'html';
+        if (ext === 'css') lang = 'css';
+        if (ext === 'js') lang = 'javascript';
+        monaco.editor.setModelLanguage(window.editor.getModel(), lang);
+    }
+
+    function compileProject() {
+        if(window.editor) projectFiles[currentFileName] = window.editor.getValue();
+        
+        let htmlContent = projectFiles["index.html"] || '';
+        let cssBundle = '';
+        let jsBundle = '';
+
+        Object.keys(projectFiles).forEach(name => {
+            if (name.endsWith('.css')) cssBundle += `\n/* --- ${name} --- */\n${projectFiles[name]}`;
+            if (name.endsWith('.js')) jsBundle += `\n// --- ${name} ---\n${projectFiles[name]}`;
+        });
+
+        if (cssBundle) {
+            if (htmlContent.includes('</head>')) {
+                htmlContent = htmlContent.replace('</head>', `<style>${cssBundle}</style>\n</head>`);
+            } else {
+                htmlContent = `<style>${cssBundle}</style>\n` + htmlContent;
+            }
+        }
+        if (jsBundle) {
+            if (htmlContent.includes('</body>')) {
+                htmlContent = htmlContent.replace('</body>', `<script>${jsBundle}<\/script>\n</body>`);
+            } else {
+                htmlContent = htmlContent + `\n<script>${jsBundle}<\/script>`;
+            }
+        }
+        return htmlContent;
+    }
+
+    document.getElementById('createFileBtn').addEventListener('click', () => {
+        const input = document.getElementById('newFileName');
+        const name = input.value.trim();
+        if (!name) return showToast("Укажите имя файла!", "error");
+        if (projectFiles[name]) return showToast("Файл уже существует!", "error");
+        
+        const ext = name.split('.').pop().toLowerCase();
+        let initialCode = '';
+        if (ext === 'css') initialCode = '/* Стили */';
+        if (ext === 'js') initialCode = '// Логика';
+        if (ext === 'html') initialCode = '';
+
+        projectFiles[name] = initialCode;
+        input.value = '';
+        renderFilesList();
+        switchFile(name);
+        showToast(`Файл ${name} добавлен!`);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.matches('.dots-btn')) {
+            document.querySelectorAll('.dropdown-content:not(#libDropdown)').forEach(d => d.classList.remove('show'));
+        } else {
+            document.querySelectorAll('.dropdown-content:not(#libDropdown)').forEach(d => {
+                if (d !== e.target.nextElementSibling) d.classList.remove('show');
+            });
+            e.target.nextElementSibling.classList.toggle('show');
+        }
+        const libDropdown = document.getElementById('libDropdown');
+        if (!e.target.matches('#libBtn')) {
+            if (libDropdown) libDropdown.classList.remove('show');
+        } else {
+            if (libDropdown) libDropdown.classList.toggle('show');
+        }
+    });
+
+    document.querySelectorAll('.lib-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            const cdnTag = e.target.getAttribute('data-cdn');
+            switchFile('index.html');
+            let code = window.editor.getValue();
+            if (code.includes(cdnTag)) return showToast("Библиотека уже есть!", "error");
+
+            if (code.includes('</head>')) code = code.replace('</head>', `    ${cdnTag}\n</head>`);
+            else code = cdnTag + "\n" + code;
+            
+            window.editor.setValue(code);
+            projectFiles["index.html"] = code;
+            showToast("Библиотека подключена!");
+        });
+    });
+
+    const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    toggleSidebarBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        sidebarOverlay.classList.toggle('open');
+    });
+    sidebarOverlay.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('open');
+    });
+
+    // ПОЛНОЭКРАННЫЙ ТЕСТ: Открывает чистый скомпилированный код в новой вкладке без фреймов просмотра
+    document.getElementById('testBtn').addEventListener('click', () => {
+        const compiled = compileProject();
+        const testWindow = window.open();
+        if (testWindow) {
+            testWindow.document.open();
+            testWindow.document.write(compiled);
+            testWindow.document.close();
+        } else {
+            showToast("Всплывающее окно заблокировано вашим браузером!", "error");
+        }
+    });
+
+    // --- БЕЗОПАСНЫЙ СЕГМЕНТНЫЙ РОУТИНГ (ФИКС ЧЕРНОГО ЭКРАНА) ---
     const path = window.location.pathname;
-    
-    if (path.startsWith('/site/')) {
-        document.getElementById('builder-mode').style.display = 'none';
-        const siteName = path.split('/').pop();
-        if (siteName) loadSiteFromDatabase(siteName);
+    const segments = path.split('/').filter(Boolean); // Фильтруем пустые элементы, убирая баги с косой чертой
+
+    if (segments.length >= 2 && segments[0] === 'site') {
+        const siteName = segments[1];
+        loadSiteFromDatabase(siteName);
     } else {
+        document.getElementById('builder-mode').style.display = 'flex';
         initBuilder();
     }
 
     async function loadSiteFromDatabase(name) {
-        const siteRef = doc(db, "published_sites", name);
-        const docSnap = await getDoc(siteRef);
+        document.body.innerHTML = `<div id="site-runtime-wrapper" style="width:100vw; height:100vh; margin:0; padding:0; overflow:hidden; background:#0d0d0d;"></div>`;
+        const wrapper = document.getElementById('site-runtime-wrapper');
 
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            if (data.status === 'offline') {
-                document.body.innerHTML = `<div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0d0d0d; color: #fff; font-family: sans-serif;"><h1 style="color: #ef4444;">Сайт выключен</h1></div>`;
-            } else if (data.status === 'restarting') {
-                document.body.innerHTML = `<div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0d0d0d; color: #fff; font-family: sans-serif;"><h1 style="color: #6b7280; animation: pulse 1s infinite;">Перезагрузка...</h1></div>`;
-                setTimeout(() => location.reload(), 3000);
-            } else {
-                document.open();
-                document.write(data.code);
-                document.close();
+        const offlineHTML = `<div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#0d0d0d; color:#fff; font-family:sans-serif; text-align:center;"><h1 style="color:#ef4444;">Сайт выключен или удален</h1></div>`;
+        const restartingHTML = `<div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#0d0d0d; color:#fff; font-family:sans-serif; text-align:center;"><h1 style="color:#6b7280;">Перезагрузка сервера...</h1></div>`;
+
+        try {
+            const siteRef = doc(db, "published_sites", name);
+            let isUnlocked = false;
+
+            onSnapshot(siteRef, (docSnap) => {
+                if (!docSnap.exists()) {
+                    wrapper.innerHTML = offlineHTML;
+                    return;
+                }
+
+                const data = docSnap.data();
+                const status = data.status || 'online';
+                const sitePassword = data.password || '';
+
+                if (sitePassword.trim() !== '' && !isUnlocked) {
+                    wrapper.innerHTML = `
+                        <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d0d0d; color: #fff; font-family: sans-serif; padding: 20px; box-sizing: border-box;">
+                            <h2 style="margin-bottom: 20px; font-size: 20px;">Этот сайт защищен паролем</h2>
+                            <div style="display: flex; gap: 10px; max-width: 320px; width: 100%;">
+                                <input type="password" id="unlock-pass" placeholder="Введите пароль" style="flex: 1; padding: 12px; background: #141414; color: #fff; border: 1px solid #262626; border-radius: 4px; outline: none; font-size:14px;">
+                                <button id="unlock-btn" style="padding: 12px 20px; background: #4f46e5; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Войти</button>
+                            </div>
+                            <p id="unlock-error" style="color: #ef4444; margin-top: 15px; display: none; font-size: 14px;">Неверный пароль!</p>
+                        </div>`;
+
+                    document.getElementById('unlock-btn').addEventListener('click', () => {
+                        const entered = document.getElementById('unlock-pass').value;
+                        if (entered === sitePassword) {
+                            isUnlocked = true;
+                            renderContent(data, status);
+                        } else {
+                            document.getElementById('unlock-error').style.display = 'block';
+                        }
+                    });
+                    return;
+                }
+
+                renderContent(data, status);
+            }, (error) => {
+                wrapper.innerHTML = `<div style="height:100vh; display:flex; align-items:center; justify-content:center; color:#ef4444; font-family:sans-serif;">Ошибка загрузки базы: ${error.message}</div>`;
+            });
+
+            function renderContent(data, status) {
+                if (status === 'offline') {
+                    wrapper.innerHTML = offlineHTML;
+                } else if (status === 'restarting') {
+                    wrapper.innerHTML = restartingHTML;
+                } else {
+                    let iframe = document.getElementById('runtime-iframe');
+                    if (!iframe) {
+                        wrapper.innerHTML = `<iframe id="runtime-iframe" style="width: 100%; height: 100%; border: none; display: block; background: #fff;"></iframe>`;
+                        iframe = document.getElementById('runtime-iframe');
+                        iframe.srcdoc = data.code || '<h1>Пустой сайт</h1>';
+                        iframe.dataset.currentCode = data.code || '';
+                    } else if (iframe.dataset.currentCode !== data.code) {
+                        iframe.srcdoc = data.code || '<h1>Пустой сайт</h1>';
+                        iframe.dataset.currentCode = data.code || '';
+                    }
+                }
             }
-        } else {
-            document.body.innerHTML = "<h1 style='color:red; text-align:center; font-family:sans-serif;'>Ошибка 404: Сайт не найден</h1>";
+        } catch (e) {
+            wrapper.innerHTML = `<div style="height:100vh; display:flex; align-items:center; justify-content:center; color:#ef4444; font-family:sans-serif;">Ошибка инициализации: ${e.message}</div>`;
         }
     }
 
     function initBuilder() {
         let currentUser = null;
-        let currentToolboxCode = ""; // Хранит код выбранного сниппета
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' }});
         require(['vs/editor/editor.main'], function() {
             window.editor = monaco.editor.create(document.getElementById('monaco-editor'), {
-                value: '<!DOCTYPE html>\n<html>\n<head>\n  <title>Новый проект</title>\n</head>\n<body>\n  <h1>Привет!</h1>\n</body>\n</html>',
+                value: projectFiles["index.html"],
                 language: 'html',
                 theme: 'vs-dark',
                 automaticLayout: true
             });
+            renderFilesList();
         });
 
         document.getElementById('loginBtn').addEventListener('click', () => {
-            signInWithPopup(auth, new GoogleAuthProvider()).catch(err => alert(err.message));
+            signInWithPopup(auth, new GoogleAuthProvider()).catch(err => showToast(err.message, 'error'));
         });
 
         onAuthStateChanged(auth, (user) => {
@@ -185,106 +437,11 @@
                 document.getElementById('loginBtn').classList.add('hidden');
                 document.getElementById('userInfo').classList.remove('hidden');
                 document.getElementById('historyBlock').classList.remove('hidden');
-                document.getElementById('openToolboxBtn').classList.remove('hidden');
                 document.getElementById('userName').innerText = user.displayName;
-                
                 loadUserHistory(user.uid);
             }
         });
 
-        /* --- ЛОГИКА ТУЛБОКСА --- */
-        const toolboxModal = document.getElementById('toolbox-modal');
-        
-        // Открыть тулбокс
-        document.getElementById('openToolboxBtn').addEventListener('click', () => {
-            toolboxModal.classList.remove('hidden');
-            loadToolboxSnippets();
-        });
-
-        // Закрыть тулбокс
-        document.getElementById('closeToolboxBtn').addEventListener('click', () => {
-            toolboxModal.classList.add('hidden');
-        });
-
-        // Опубликовать текущий код в тулбокс
-        document.getElementById('shareToToolboxBtn').addEventListener('click', async () => {
-            if (!currentUser) return alert("Войдите в аккаунт!");
-            
-            const title = prompt("Введите понятное название для этого кода (например: 'Кнопка с анимацией'):");
-            if (!title) return;
-
-            try {
-                await addDoc(collection(db, "toolbox"), {
-                    title: title,
-                    code: window.editor.getValue(),
-                    author: currentUser.displayName,
-                    authorId: currentUser.uid,
-                    timestamp: new Date()
-                });
-                alert("Код успешно добавлен в Тулбокс!");
-            } catch (error) {
-                alert("Ошибка публикации: " + error.message);
-            }
-        });
-
-        // Загрузка списка кодов из базы
-        async function loadToolboxSnippets() {
-            const listEl = document.getElementById('toolboxList');
-            listEl.innerHTML = '<div style="color: #666; text-align: center;">Загрузка...</div>';
-            
-            try {
-                // Получаем все документы из коллекции toolbox
-                const q = query(collection(db, "toolbox"));
-                const querySnapshot = await getDocs(q);
-                
-                listEl.innerHTML = '';
-                if(querySnapshot.empty) {
-                    listEl.innerHTML = '<div style="color: #666; text-align: center;">Тулбокс пока пуст.</div>';
-                    return;
-                }
-
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    
-                    const item = document.createElement('div');
-                    item.className = 'tb-item';
-                    item.innerHTML = `
-                        <div class="tb-item-title">${data.title}</div>
-                        <div class="tb-item-author">От: ${data.author || 'Неизвестный'}</div>
-                    `;
-                    
-                    // При клике показываем код справа
-                    item.addEventListener('click', () => {
-                        // Убираем подсветку со всех
-                        document.querySelectorAll('.tb-item').forEach(el => el.classList.remove('active'));
-                        item.classList.add('active');
-                        
-                        document.getElementById('tb-view-title').innerText = data.title;
-                        document.getElementById('tb-view-author').innerText = `Автор: ${data.author || 'Неизвестный'}`;
-                        document.getElementById('tb-code-display').innerText = data.code;
-                        currentToolboxCode = data.code;
-                        document.getElementById('tb-copy-btn').classList.remove('hidden');
-                    });
-                    
-                    listEl.appendChild(item);
-                });
-            } catch (err) {
-                listEl.innerHTML = '<div style="color: red;">Ошибка загрузки</div>';
-                console.error(err);
-            }
-        }
-
-        // Копирование кода
-        document.getElementById('tb-copy-btn').addEventListener('click', () => {
-            navigator.clipboard.writeText(currentToolboxCode).then(() => {
-                const btn = document.getElementById('tb-copy-btn');
-                btn.innerText = "✅ Скопировано!";
-                setTimeout(() => btn.innerText = "📋 Скопировать код", 2000);
-            });
-        });
-        /* --- КОНЕЦ ЛОГИКИ ТУЛБОКСА --- */
-
-        // (Здесь остается старый код публикации и истории)
         document.getElementById('refreshHistoryBtn').addEventListener('click', () => {
             if (currentUser) loadUserHistory(currentUser.uid);
         });
@@ -292,6 +449,7 @@
         async function loadUserHistory(uid) {
             const historyList = document.getElementById('historyList');
             historyList.innerHTML = '<span style="color:#666; font-size:12px;">Загрузка...</span>'; 
+
             const q = query(collection(db, "published_sites"), where("ownerId", "==", uid));
             const querySnapshot = await getDocs(q);
             historyList.innerHTML = '';
@@ -309,16 +467,20 @@
                 li.className = 'history-item';
                 li.innerHTML = `
                     <div class="history-header">
-                        <span class="status-dot ${dotClass}" title="Статус: ${status}"></span>
-                        <a href="/site/${siteName}" target="_blank">/${siteName}</a>
-                    </div>
-                    <div class="site-controls">
-                        <button class="control-btn" data-action="edit" data-id="${siteName}">✏️ Код</button>
-                        <button class="control-btn" data-action="power" data-id="${siteName}" data-status="${status}">${status === 'offline' ? '▶️ Вкл' : '⏸️ Выкл'}</button>
-                        <button class="control-btn" data-action="restart" data-id="${siteName}">🔄</button>
-                        <button class="control-btn btn-delete" data-action="delete" data-id="${siteName}">🗑️</button>
-                    </div>
-                `;
+                        <div class="history-header-left">
+                            <span class="status-dot ${dotClass}" title="Статус: ${status}"></span>
+                            <a href="/site/${siteName}" target="_blank">/${siteName}</a>
+                        </div>
+                        <div class="menu-container">
+                            <button class="dots-btn">⋮</button>
+                            <div class="dropdown-content">
+                                <button class="control-btn" data-action="edit" data-id="${siteName}">Редактировать код</button>
+                                <button class="control-btn" data-action="power" data-id="${siteName}" data-status="${status}">${status === 'offline' ? 'Включить сайт' : 'Выключить сайт'}</button>
+                                <button class="control-btn" data-action="restart" data-id="${siteName}">Перезагрузить</button>
+                                <button class="control-btn btn-delete" data-action="delete" data-id="${siteName}">Удалить навсегда</button>
+                            </div>
+                        </div>
+                    </div>`;
                 historyList.appendChild(li);
             });
             attachControlEvents();
@@ -331,61 +493,96 @@
                     const siteName = e.target.getAttribute('data-id');
                     const siteRef = doc(db, "published_sites", siteName);
 
+                    sidebar.classList.remove('open');
+                    sidebarOverlay.classList.remove('open');
+
                     if (action === 'edit') {
                         const snap = await getDoc(siteRef);
                         if(snap.exists()) {
-                            window.editor.setValue(snap.data().code);
+                            const data = snap.data();
+                            projectFiles = data.files || { "index.html": data.code };
+                            currentFileName = "index.html";
+                            
+                            window.editor.setValue(projectFiles[currentFileName]);
+                            updateEditorLanguage(currentFileName);
+                            renderFilesList();
+
                             document.getElementById('siteNameInput').value = siteName;
+                            document.getElementById('sitePasswordInput').value = data.password || '';
+                            showToast("Проект успешно загружен!");
                         }
-                    } else if (action === 'power') {
+                    } 
+                    else if (action === 'power') {
                         const currentStatus = e.target.getAttribute('data-status');
                         const newStatus = currentStatus === 'offline' ? 'online' : 'offline';
                         await updateDoc(siteRef, { status: newStatus });
+                        showToast(newStatus === 'online' ? "Сайт запущен!" : "Сайт выключен.");
                         loadUserHistory(currentUser.uid);
-                    } else if (action === 'restart') {
+                    }
+                    else if (action === 'restart') {
                         await updateDoc(siteRef, { status: 'restarting' });
+                        showToast("Сервер перезагружается...");
                         loadUserHistory(currentUser.uid);
                         setTimeout(async () => {
                             await updateDoc(siteRef, { status: 'online' });
                             loadUserHistory(currentUser.uid);
                         }, 3000);
-                    } else if (action === 'delete') {
-                        if (confirm(`Удалить сайт ${siteName}?`)) {
+                    }
+                    else if (action === 'delete') {
+                        if (confirm(`Удалить сайт ${siteName} навсегда?`)) {
                             await deleteDoc(siteRef);
+                            showToast("Сайт окончательно удален");
                             loadUserHistory(currentUser.uid);
-                            if (document.getElementById('siteNameInput').value === siteName) {
-                                document.getElementById('siteNameInput').value = '';
-                                window.editor.setValue('<!-- Сайт удален -->');
-                            }
                         }
                     }
                 });
             });
         }
 
-        document.getElementById('testBtn').addEventListener('click', () => {
-            document.getElementById('preview-frame').srcdoc = window.editor.getValue();
-        });
-
         document.getElementById('publishBtn').addEventListener('click', async () => {
-            if (!currentUser) return alert("Войдите в аккаунт!");
-            const siteName = document.getElementById('siteNameInput').value.trim();
-            if (!siteName || siteName.includes('/')) return alert("Введите корректное имя!");
-
-            const siteRef = doc(db, "published_sites", siteName);
-            const docSnap = await getDoc(siteRef);
+            if (!currentUser) return showToast("Войдите в аккаунт через Google!", "error");
             
-            if (docSnap.exists()) {
-                if (docSnap.data().ownerId !== currentUser.uid) {
-                    return alert("Это имя занято другим пользователем!");
+            const siteName = document.getElementById('siteNameInput').value.trim();
+            const password = document.getElementById('sitePasswordInput').value.trim();
+            if (!siteName || siteName.includes('/')) return showToast("Введите корректное имя!", "error");
+
+            const publishBtn = document.getElementById('publishBtn');
+            publishBtn.disabled = true;
+            
+            const container = document.getElementById('toast-container');
+            const loadingToast = document.createElement('div');
+            loadingToast.className = 'toast toast-loading';
+            loadingToast.innerHTML = '<span class="spinner"></span> Сохранение...';
+            container.appendChild(loadingToast);
+
+            try {
+                const siteRef = doc(db, "published_sites", siteName);
+                const docSnap = await getDoc(siteRef);
+                
+                if (docSnap.exists() && docSnap.data().ownerId !== currentUser.uid) {
+                    loadingToast.remove();
+                    showToast("Это имя занято!", "error");
+                } else {
+                    const compiledCode = compileProject();
+                    await setDoc(siteRef, {
+                        ownerId: currentUser.uid,
+                        code: compiledCode,      
+                        files: projectFiles,     
+                        password: password,      
+                        status: docSnap.exists() ? (docSnap.data().status || 'online') : 'online',
+                        lastEdited: new Date()
+                    }, { merge: true });
+
+                    loadingToast.remove();
+                    showToast("Успешно сохранено!");
                 }
-                await updateDoc(siteRef, { code: window.editor.getValue(), lastEdited: new Date() });
-                alert("Изменения сохранены!");
-            } else {
-                await setDoc(siteRef, { ownerId: currentUser.uid, code: window.editor.getValue(), status: 'online', timestamp: new Date() });
-                alert("Сайт успешно создан!");
+            } catch (err) {
+                loadingToast.remove();
+                showToast("Ошибка сохранения: " + err.message, "error");
+            } finally {
+                publishBtn.disabled = false;
+                loadUserHistory(currentUser.uid);
             }
-            loadUserHistory(currentUser.uid);
         });
     }
 </script>
