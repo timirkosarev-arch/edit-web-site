@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <head><script>window.yaContextCb=window.yaContextCb||[]</script>
-<script src="https://yandex.ru/ads/system/context.js" async></script></head
     <meta charset="UTF-8">
     <title>WED EDITOR</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -99,16 +97,7 @@
     </style>
 </head>
 <body>
-<body><!-- Yandex.RTB R-A-19560539-1 -->
-<script>
-window.yaContextCb.push(() => {
-    Ya.Context.AdvManager.render({
-        "blockId": "R-A-19560539-1",
-        "type": "floorAd",
-        "platform": "desktop"
-    })
-})
-</script></body>
+
 <div id="sidebar-overlay"></div>
 <div id="toast-container"></div>
 
@@ -334,13 +323,11 @@ window.yaContextCb.push(() => {
         let cssBundle = '';
         let jsBundle = '';
 
-        // Собираем CSS и JS из дополнительных файлов
         Object.keys(projectFiles).forEach(name => {
             if (name.endsWith('.css')) cssBundle += `\n/* --- ${name} --- */\n${projectFiles[name]}`;
             if (name.endsWith('.js')) jsBundle += `\n// --- ${name} ---\n${projectFiles[name]}`;
         });
 
-        // Вставляем стили
         if (cssBundle) {
             if (htmlContent.includes('</head>')) {
                 htmlContent = htmlContent.replace('</head>', `<style>${cssBundle}</style>\n</head>`);
@@ -349,21 +336,18 @@ window.yaContextCb.push(() => {
             }
         }
 
-        // --- ДОБАВЛЕНИЕ ВОДЯНОГО ЗНАКА WED EDITOR ---
         const watermark = `
         <div style="position: fixed; bottom: 15px; right: 15px; background: rgba(20, 20, 20, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #e0e0e0; padding: 10px 16px; border-radius: 8px; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 13px; z-index: 2147483647; border: 1px solid #262626; box-shadow: 0 8px 20px rgba(0,0,0,0.5); pointer-events: auto; user-select: none;">
             Создано на wededit.xyz за 5 минут. 
             <a href="https://wededit.xyz" target="_blank" style="color: #4f46e5; text-decoration: none; font-weight: bold; margin-left: 6px; transition: 0.2s;" onmouseover="this.style.filter='brightness(1.2)'" onmouseout="this.style.filter='none'">[Создать свой сайт]</a>
         </div>`;
         
-        // Внедряем водяной знак перед закрывающим тегом </body> или в конец документа
         if (htmlContent.includes('</body>')) {
             htmlContent = htmlContent.replace('</body>', watermark + '\n</body>');
         } else {
             htmlContent += watermark;
         }
 
-        // Вставляем скрипты
         if (jsBundle) {
             if (htmlContent.includes('</body>')) {
                 htmlContent = htmlContent.replace('</body>', `<script>${jsBundle}<\/script>\n</body>`);
@@ -451,7 +435,6 @@ window.yaContextCb.push(() => {
         }
     });
 
-    // --- ЛОГИКА ГАЛЕРЕИ, СЧЕТЧИКОВ И ДАТЫ ---
     const viewToggleBtn = document.getElementById('viewToggleBtn');
     const editorContainer = document.getElementById('editor-container');
     const storeContainer = document.getElementById('store-container');
@@ -534,7 +517,6 @@ window.yaContextCb.push(() => {
         currentProjectCreatedAt = null; 
     });
 
-    // --- ОБРАБОТКА СТРАНИЦЫ САЙТА (МЕТРИКИ И ПРОСМОТРЫ) ---
     const path = window.location.pathname;
     const segments = path.split('/').filter(Boolean); 
 
