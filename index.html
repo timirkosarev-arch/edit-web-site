@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head><meta name="google-adsense-account" content="ca-pub-8544452331960014"></head>
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8544452331960014"
-     crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <title>WED EDITOR</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -20,6 +17,14 @@
         #editor-container { flex: 1; display: flex; overflow: hidden; position: relative; }
         #monaco-editor { flex: 1; height: 100%; }
         
+        /* Стили для контейнера Стора/Галереи */
+        #store-container { flex: 1; padding: 25px; overflow-y: auto; background: var(--bg); }
+        .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-top: 20px; }
+        .store-card { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 6px; display: flex; flex-direction: column; justify-content: space-between; gap: 15px; }
+        .store-card h4 { margin: 0; font-size: 16px; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .store-card a { display: block; text-align: center; background: var(--accent); color: #fff; text-decoration: none; padding: 8px; border-radius: 4px; font-weight: bold; font-size: 13px; transition: 0.2s; }
+        .store-card a:hover { filter: brightness(1.2); }
+
         input, button { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 4px; outline: none; font-size: 14px; }
         button { background: var(--accent); color: #fff; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
         button:hover { filter: brightness(1.2); }
@@ -123,6 +128,9 @@
     <div id="workspace">
         <div id="toolbar">
             <button id="toggleSidebarBtn" class="mobile-only" style="background: var(--panel); border: 1px solid var(--border);">☰</button>
+            
+            <button id="viewToggleBtn" style="background: #262626; border: 1px solid var(--border);">Галерея</button>
+
             <input type="text" id="siteNameInput" placeholder="Имя сайта (ссылка)">
             <input type="text" id="customTabTitle" placeholder="Заголовок вкладки">
             <input type="text" id="customFavicon" placeholder="Ссылка на аву вкладки">
@@ -141,8 +149,15 @@
             <button id="testBtn">Тест</button>
             <button id="publishBtn">Сохранить</button>
         </div>
+
         <div id="editor-container">
             <div id="monaco-editor"></div>
+        </div>
+
+        <div id="store-container" class="hidden">
+            <h3 style="margin-top: 0; font-size: 20px; tracking-content: wide;">Опубликованные сайты</h3>
+            <div id="store-grid" class="store-grid">
+                </div>
         </div>
     </div>
 </div>
@@ -333,6 +348,54 @@
         }
     });
 
+    // --- ЛОГИКА ДЛЯ ПЕРЕКЛЮЧЕНИЯ И СБОРА СТОРА (ГАЛЕРЕИ) ---
+    const viewToggleBtn = document.getElementById('viewToggleBtn');
+    const editorContainer = document.getElementById('editor-container');
+    const storeContainer = document.getElementById('store-container');
+    const storeGrid = document.getElementById('store-grid');
+
+    viewToggleBtn.addEventListener('click', () => {
+        if (storeContainer.classList.contains('hidden')) {
+            storeContainer.classList.remove('hidden');
+            editorContainer.classList.add('hidden');
+            viewToggleBtn.innerText = 'Редактор';
+            loadStoreSites();
+        } else {
+            storeContainer.classList.add('hidden');
+            editorContainer.classList.remove('hidden');
+            viewToggleBtn.innerText = 'Галерея';
+        }
+    });
+
+    async function loadStoreSites() {
+        storeGrid.innerHTML = '<span style="color:#666; font-size:14px;">Загрузка галереи...</span>';
+        try {
+            // Вытягиваем только сайты со статусом online (чтобы не светить выключенные/удаленные)
+            const q = query(collection(db, "published_sites"), where("status", "==", "online"));
+            const querySnapshot = await getDocs(q);
+            storeGrid.innerHTML = '';
+
+            if (querySnapshot.empty) {
+                storeGrid.innerHTML = '<span style="color:#666; font-size:14px;">Нет доступных публичных сайтов.</span>';
+                return;
+            }
+
+            querySnapshot.forEach((docSnap) => {
+                const siteName = docSnap.id;
+                const card = document.createElement('div');
+                card.className = 'store-card';
+                card.innerHTML = `
+                    <h4>/${siteName}</h4>
+                    <a href="/site/${siteName}" target="_blank">Перейти</a>
+                `;
+                storeGrid.appendChild(card);
+            });
+        } catch (err) {
+            storeGrid.innerHTML = `<span style="color:#ef4444; font-size:14px;">Ошибка загрузки: ${err.message}</span>`;
+        }
+    }
+    // --------------------------------------------------------
+
     const path = window.location.pathname;
     const segments = path.split('/').filter(Boolean); 
 
@@ -365,7 +428,6 @@
                 const status = data.status || 'online';
                 const sitePassword = data.password || '';
 
-                // --- ПОДМЕНА ВКЛАДКИ И АВАТАРКИ ---
                 if (data.tabTitle) {
                     document.title = data.tabTitle;
                 }
@@ -378,12 +440,11 @@
                     }
                     link.href = data.faviconUrl;
                 }
-                // ------------------------------------
 
                 if (sitePassword.trim() !== '' && !isUnlocked) {
                     wrapper.innerHTML = `
                         <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d0d0d; color: #fff; font-family: sans-serif; padding: 20px; box-sizing: border-box;">
-                            <h2 style="margin-bottom: 20px; font-size: 20px;">Этот сайт защищен паролем</h2>
+                            <h2 style="margin-bottom: 20px; font-size: 20px;">Этот site защищен паролем</h2>
                             <div style="display: flex; gap: 10px; max-width: 320px; width: 100%;">
                                 <input type="password" id="unlock-pass" placeholder="Введите пароль" style="flex: 1; padding: 12px; background: #141414; color: #fff; border: 1px solid #262626; border-radius: 4px; outline: none; font-size:14px;">
                                 <button id="unlock-btn" style="padding: 12px 20px; background: #4f46e5; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Войти</button>
@@ -527,8 +588,6 @@
 
                             document.getElementById('siteNameInput').value = siteName;
                             document.getElementById('sitePasswordInput').value = data.password || '';
-                            
-                            // Восстанавливаем кастомные настройки вкладки
                             document.getElementById('customTabTitle').value = data.tabTitle || '';
                             document.getElementById('customFavicon').value = data.faviconUrl || '';
                             
@@ -562,16 +621,14 @@
             });
         }
 
+        // --- ВОССТАНОВЛЕННЫЙ И ДОПИСАННЫЙ ОБРАБОТЧИК СОХРАНЕНИЯ ---
         document.getElementById('publishBtn').addEventListener('click', async () => {
             if (!currentUser) return showToast("Войдите в аккаунт через Google!", "error");
             
             const siteName = document.getElementById('siteNameInput').value.trim();
             const password = document.getElementById('sitePasswordInput').value.trim();
-            
-            // --- ДОБАВЛЕНО: Сбор данных вкладки ---
             const tabTitle = document.getElementById('customTabTitle').value.trim();
             const faviconUrl = document.getElementById('customFavicon').value.trim();
-            // --------------------------------------
             
             if (!siteName || siteName.includes('/')) return showToast("Введите корректное имя!", "error");
 
@@ -585,34 +642,25 @@
             container.appendChild(loadingToast);
 
             try {
-                const siteRef = doc(db, "published_sites", siteName);
-                const docSnap = await getDoc(siteRef);
-                
-                if (docSnap.exists() && docSnap.data().ownerId !== currentUser.uid) {
-                    loadingToast.remove();
-                    showToast("Это имя занято!", "error");
-                } else {
-                    const compiledCode = compileProject();
-                    await setDoc(siteRef, {
-                        ownerId: currentUser.uid,
-                        code: compiledCode,      
-                        files: projectFiles,     
-                        password: password,
-                        tabTitle: tabTitle,      // Сохраняем заголовок
-                        faviconUrl: faviconUrl,  // Сохраняем аву
-                        status: docSnap.exists() ? (docSnap.data().status || 'online') : 'online',
-                        lastEdited: new Date()
-                    }, { merge: true });
+                const compiled = compileProject();
+                await setDoc(doc(db, "published_sites", siteName), {
+                    ownerId: currentUser.uid,
+                    code: compiled,
+                    files: projectFiles,
+                    password: password,
+                    tabTitle: tabTitle,
+                    faviconUrl: faviconUrl,
+                    status: 'online'
+                }, { merge: true });
 
-                    loadingToast.remove();
-                    showToast("Успешно сохранено!");
-                }
+                loadingToast.remove();
+                showToast("Проект успешно опубликован!");
+                loadUserHistory(currentUser.uid);
             } catch (err) {
                 loadingToast.remove();
-                showToast("Ошибка сохранения: " + err.message, "error");
+                showToast(`Ошибка сохранения: ${err.message}`, 'error');
             } finally {
                 publishBtn.disabled = false;
-                loadUserHistory(currentUser.uid);
             }
         });
     }
