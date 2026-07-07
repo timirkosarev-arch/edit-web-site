@@ -334,19 +334,44 @@ window.yaContextCb.push(() => {
         let cssBundle = '';
         let jsBundle = '';
 
+        // Собираем CSS и JS из дополнительных файлов
         Object.keys(projectFiles).forEach(name => {
             if (name.endsWith('.css')) cssBundle += `\n/* --- ${name} --- */\n${projectFiles[name]}`;
             if (name.endsWith('.js')) jsBundle += `\n// --- ${name} ---\n${projectFiles[name]}`;
         });
 
+        // Вставляем стили
         if (cssBundle) {
-            if (htmlContent.includes('</head>')) htmlContent = htmlContent.replace('</head>', `<style>${cssBundle}</style>\n</head>`);
-            else htmlContent = `<style>${cssBundle}</style>\n` + htmlContent;
+            if (htmlContent.includes('</head>')) {
+                htmlContent = htmlContent.replace('</head>', `<style>${cssBundle}</style>\n</head>`);
+            } else {
+                htmlContent = `<style>${cssBundle}</style>\n` + htmlContent;
+            }
         }
+
+        // --- ДОБАВЛЕНИЕ ВОДЯНОГО ЗНАКА WED EDITOR ---
+        const watermark = `
+        <div style="position: fixed; bottom: 15px; right: 15px; background: rgba(20, 20, 20, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #e0e0e0; padding: 10px 16px; border-radius: 8px; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 13px; z-index: 2147483647; border: 1px solid #262626; box-shadow: 0 8px 20px rgba(0,0,0,0.5); pointer-events: auto; user-select: none;">
+            Создано на wededit.xyz за 5 минут. 
+            <a href="https://wededit.xyz" target="_blank" style="color: #4f46e5; text-decoration: none; font-weight: bold; margin-left: 6px; transition: 0.2s;" onmouseover="this.style.filter='brightness(1.2)'" onmouseout="this.style.filter='none'">[Создать свой сайт]</a>
+        </div>`;
+        
+        // Внедряем водяной знак перед закрывающим тегом </body> или в конец документа
+        if (htmlContent.includes('</body>')) {
+            htmlContent = htmlContent.replace('</body>', watermark + '\n</body>');
+        } else {
+            htmlContent += watermark;
+        }
+
+        // Вставляем скрипты
         if (jsBundle) {
-            if (htmlContent.includes('</body>')) htmlContent = htmlContent.replace('</body>', `<script>${jsBundle}<\/script>\n</body>`);
-            else htmlContent = htmlContent + `\n<script>${jsBundle}<\/script>`;
+            if (htmlContent.includes('</body>')) {
+                htmlContent = htmlContent.replace('</body>', `<script>${jsBundle}<\/script>\n</body>`);
+            } else {
+                htmlContent = htmlContent + `\n<script>${jsBundle}<\/script>`;
+            }
         }
+        
         return htmlContent;
     }
 
