@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>WED EDITOR</title>
@@ -13,7 +13,6 @@
         #sidebar { width: 300px; background: var(--panel); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; box-sizing: border-box; }
         #workspace { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Тулбар стал немного выше и поддерживает перенос элементов */
         #toolbar { min-height: 60px; background: var(--panel); display: flex; align-items: center; padding: 10px 20px; gap: 15px; border-bottom: 1px solid var(--border); box-sizing: border-box; flex-wrap: wrap; }
         
         #editor-container { flex: 1; display: flex; overflow: hidden; position: relative; }
@@ -104,28 +103,32 @@
 
 <div id="builder-mode">
     <div id="sidebar">
-        <h2 style="margin-top:0; display: flex; align-items: center; gap: 10px;">
-            <img src="https://imgfy.ru/ib/HkMiw4FtBh0vpkM_1783257687.webp" alt="Logo" style="width: 28px; height: 28px; object-fit: cover; border-radius: 4px;">
-            WED EDITOR
+        <h2 style="margin-top:0; display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="https://imgfy.ru/ib/HkMiw4FtBh0vpkM_1783257687.webp" alt="Logo" style="width: 28px; height: 28px; object-fit: cover; border-radius: 4px;">
+                WED EDITOR
+            </div>
+            <button id="langToggleBtn" style="padding: 4px 8px; font-size: 11px; background: #262626; border: 1px solid var(--border);">EN</button>
         </h2>
-        <button id="loginBtn">Войти через Google</button>
+        <button id="loginBtn" data-i18n="login">Log in with Google</button>
         <div id="userInfo" class="hidden">
-            <span style="color:#888; font-size: 12px;">Аккаунт:</span><br>
+            <span id="accountLabel" style="color:#888; font-size: 12px;" data-i18n="account">Account:</span><br>
             <span id="userName" style="color:#fff; font-weight: bold;"></span>
         </div>
         
         <div class="project-section">
-            <h3 style="font-size: 14px; color: #888; margin-top: 0;">ФАЙЛЫ ПРОЕКТА</h3>
+            <h3 style="font-size: 14px; color: #888; margin-top: 0;" data-i18n="projectFiles">PROJECT FILES</h3>
             <div style="display: flex; gap: 6px;">
-                <input type="text" id="newFileName" placeholder="style.css или script.js" style="flex:1; padding: 6px; font-size: 12px;">
+                <input type="text" id="newFileName" data-i18n-placeholder="filePlaceholder" placeholder="style.css or script.js" style="flex:1; padding: 6px; font-size: 12px;">
                 <button id="createFileBtn" style="padding: 6px 10px; font-size: 12px;">+</button>
             </div>
             <ul id="filesList" class="files-list"></ul>
         </div>
         
         <div id="historyBlock" class="history-section hidden">
-            <h3 style="font-size: 14px; color: #888; margin-top: 0; display: flex; justify-content: space-between;">
-                МОИ САЙТЫ <button id="refreshHistoryBtn" style="padding: 2px 6px; font-size: 10px; background: transparent; border: 1px solid #444;">Обновить</button>
+            <h3 style="font-size: 14px; color: #888; margin-top: 0; display: flex; justify-content: space-between; align-items: center;">
+                <span data-i18n="mySites">MY SITES</span> 
+                <button id="refreshHistoryBtn" style="padding: 2px 6px; font-size: 10px; background: transparent; border: 1px solid #444;" data-i18n="refresh">Refresh</button>
             </h3>
             <ul id="historyList" class="history-list"></ul>
         </div>
@@ -134,34 +137,34 @@
     <div id="workspace">
         <div id="toolbar">
             <div style="display: flex; gap: 10px; width: 100%; flex-wrap: wrap;">
-                <button id="toggleSidebarBtn" class="mobile-only" style="background: var(--panel); border: 1px solid var(--border);">Меню</button>
-                <button id="viewToggleBtn" style="background: #262626; border: 1px solid var(--border);">Галерея</button>
+                <button id="toggleSidebarBtn" class="mobile-only" style="background: var(--panel); border: 1px solid var(--border);" data-i18n="menu">Menu</button>
+                <button id="viewToggleBtn" style="background: #262626; border: 1px solid var(--border);" data-i18n="gallery">Gallery</button>
                 
-                <input type="text" id="siteNameInput" placeholder="Имя сайта (ссылка)" style="flex: 1; min-width: 150px;">
-                <input type="text" id="siteDescInput" placeholder="Краткое описание" style="flex: 2; min-width: 200px;">
+                <input type="text" id="siteNameInput" data-i18n-placeholder="siteName" placeholder="Site name (slug)" style="flex: 1; min-width: 150px;">
+                <input type="text" id="siteDescInput" data-i18n-placeholder="siteDesc" placeholder="Short description" style="flex: 2; min-width: 200px;">
             </div>
             
             <div style="display: flex; gap: 10px; width: 100%; flex-wrap: wrap; align-items: center;">
-                <input type="text" id="customTabTitle" placeholder="Заголовок вкладки" style="flex: 1; min-width: 120px;">
-                <input type="text" id="customFavicon" placeholder="Ссылка на аву" style="flex: 1; min-width: 120px;">
-                <input type="password" id="sitePasswordInput" placeholder="Пароль (опц.)" style="flex: 1; min-width: 120px;">
+                <input type="text" id="customTabTitle" data-i18n-placeholder="tabTitle" placeholder="Tab title" style="flex: 1; min-width: 120px;">
+                <input type="text" id="customFavicon" data-i18n-placeholder="favicon" placeholder="Favicon URL" style="flex: 1; min-width: 120px;">
+                <input type="password" id="sitePasswordInput" data-i18n-placeholder="password" placeholder="Password (opt.)" style="flex: 1; min-width: 120px;">
                 
                 <div class="menu-container">
-                    <button id="libBtn" style="background: #1e1b4b; border: 1px solid #312e81;">Библиотеки ▾</button>
+                    <button id="libBtn" style="background: #1e1b4b; border: 1px solid #312e81;" data-i18n="libraries">Libraries ▾</button>
                     <div id="libDropdown" class="dropdown-content" style="right: auto; left: 0; min-width: 180px;">
                         <button class="lib-item" data-cdn='<script src="https://cdn.tailwindcss.com"></script>'>Tailwind CSS</button>
                         <button class="lib-item" data-cdn='<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">'>Bootstrap 5</button>
-                        <button class="lib-item" data-cdn='<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">'>FontAwesome (Иконки)</button>
+                        <button class="lib-item" data-cdn='<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">'>FontAwesome</button>
                         <button class="lib-item" data-cdn='<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>'>jQuery</button>
                     </div>
                 </div>
 
                 <label class="checkbox-container">
-                    <input type="checkbox" id="isPublicCheckbox"> В галерею
+                    <input type="checkbox" id="isPublicCheckbox"> <span data-i18n="inGallery">To gallery</span>
                 </label>
 
-                <button id="testBtn" style="background: #3f3f46;">Тест</button>
-                <button id="publishBtn">Сохранить</button>
+                <button id="testBtn" style="background: #3f3f46;" data-i18n="test">Test</button>
+                <button id="publishBtn" data-i18n="save">Save</button>
             </div>
         </div>
 
@@ -171,12 +174,10 @@
 
         <div id="store-container" class="hidden">
             <div class="store-header">
-                <h3 style="margin: 0; font-size: 20px; letter-spacing: 1px;">Галерея сайтов</h3>
-                <input type="text" id="storeSearchInput" class="store-search" placeholder="Поиск по названию или описанию...">
+                <h3 style="margin: 0; font-size: 20px; letter-spacing: 1px;" data-i18n="galleryTitle">Sites Gallery</h3>
+                <input type="text" id="storeSearchInput" class="store-search" data-i18n-placeholder="searchPlaceholder" placeholder="Search by name or description...">
             </div>
-            <div id="store-grid" class="store-grid">
-                <!-- Карточки подгружаются сюда -->
-            </div>
+            <div id="store-grid" class="store-grid"></div>
         </div>
     </div>
 </div>
@@ -187,14 +188,70 @@
     import { firebaseConfig } from '/config.js'; 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, deleteDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, deleteDoc, updateDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    // --- ИНТЕРНАЦИОНАЛИЗАЦИЯ (i18n) ---
+    const i18n = {
+        en: {
+            login: "Log in with Google", account: "Account:", projectFiles: "PROJECT FILES", filePlaceholder: "style.css or script.js",
+            mySites: "MY SITES", refresh: "Refresh", gallery: "Gallery", editor: "Editor", menu: "Menu",
+            siteName: "Site name (slug)", siteDesc: "Short description", tabTitle: "Tab title", favicon: "Favicon URL",
+            password: "Password (opt.)", libraries: "Libraries ▾", inGallery: "To gallery", test: "Test", save: "Save",
+            galleryTitle: "Sites Gallery", searchPlaceholder: "Search by name or description...",
+            loadingGallery: "Loading gallery...", emptyGallery: "No sites in the gallery yet. Publish yours first!",
+            views: "Views", released: "Released", openBtn: "Open", editCode: "Edit code", 
+            powerOff: "Turn off site", powerOn: "Turn on site", restartSite: "Restart", deleteForever: "Delete forever",
+            siteOffline: "Site is offline", siteRestarting: "Restarting...", enterPass: "Enter password", unlockBtn: "Unlock", wrongPass: "Wrong password!"
+        },
+        ru: {
+            login: "Войти через Google", account: "Аккаунт:", projectFiles: "ФАЙЛЫ ПРОЕКТА", filePlaceholder: "style.css или script.js",
+            mySites: "МОИ САЙТЫ", refresh: "Обновить", gallery: "Галерея", editor: "Редактор", menu: "Меню",
+            siteName: "Имя сайта (ссылка)", siteDesc: "Краткое описание", tabTitle: "Заголовок вкладки", favicon: "Ссылка на аву",
+            password: "Пароль (опц.)", libraries: "Библиотеки ▾", inGallery: "В галерею", test: "Тест", save: "Сохранить",
+            galleryTitle: "Галерея сайтов", searchPlaceholder: "Поиск по названию или описанию...",
+            loadingGallery: "Загрузка галереи...", emptyGallery: "В галерее пока нет сайтов. Опубликуйте свой первым!",
+            views: "Просмотров", released: "Выпущено", openBtn: "Перейти", editCode: "Редактировать код",
+            powerOff: "Выключить сайт", powerOn: "Включить сайт", restartSite: "Перезагрузить", deleteForever: "Удалить навсегда",
+            siteOffline: "Сайт выключен", siteRestarting: "Перезагрузка...", enterPass: "Введите пароль", unlockBtn: "Войти", wrongPass: "Неверный пароль!"
+        }
+    };
+    
+    let currentLang = 'en';
+    let currentProjectCreatedAt = null;
+
+    function switchLanguage(lang) {
+        currentLang = lang;
+        document.getElementById('langToggleBtn').innerText = lang.toUpperCase();
+        
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (i18n[lang][key]) el.innerText = i18n[lang][key];
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (i18n[lang][key]) el.placeholder = i18n[lang][key];
+        });
+
+        const storeContainer = document.getElementById('store-container');
+        const viewToggleBtn = document.getElementById('viewToggleBtn');
+        if (viewToggleBtn) {
+            viewToggleBtn.innerText = storeContainer.classList.contains('hidden') ? i18n[lang].gallery : i18n[lang].editor;
+        }
+    }
+
+    document.getElementById('langToggleBtn').addEventListener('click', () => {
+        switchLanguage(currentLang === 'en' ? 'ru' : 'en');
+        if (!document.getElementById('store-container').classList.contains('hidden')) {
+            loadStoreSites();
+        }
+    });
+
     let projectFiles = {
-        "index.html": "<!DOCTYPE html>\n<html>\n<head>\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Новый проект</title>\n</head>\n<body>\n  <h1>Привет!</h1>\n</body>\n</html>"
+        "index.html": "<!DOCTYPE html>\n<html>\n<head>\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>New Project</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>"
     };
     let currentFileName = "index.html";
 
@@ -229,7 +286,7 @@
                 del.innerHTML = '×';
                 del.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    if(confirm(`Удалить файл ${name}?`)) {
+                    if(confirm(currentLang === 'ru' ? `Удалить файл ${name}?` : `Delete file ${name}?`)) {
                         delete projectFiles[name];
                         if (currentFileName === name) currentFileName = 'index.html';
                         renderFilesList();
@@ -285,20 +342,19 @@
     document.getElementById('createFileBtn').addEventListener('click', () => {
         const input = document.getElementById('newFileName');
         const name = input.value.trim();
-        if (!name) return showToast("Укажите имя файла!", "error");
-        if (projectFiles[name]) return showToast("Файл уже существует!", "error");
+        if (!name) return showToast(currentLang === 'ru' ? "Укажите имя файла!" : "Specify file name!", "error");
+        if (projectFiles[name]) return showToast(currentLang === 'ru' ? "Файл уже существует!" : "File already exists!", "error");
         
         const ext = name.split('.').pop().toLowerCase();
         let initialCode = '';
-        if (ext === 'css') initialCode = '/* Стили */';
-        if (ext === 'js') initialCode = '// Логика';
-        if (ext === 'html') initialCode = '';
+        if (ext === 'css') initialCode = '/* Styles */';
+        if (ext === 'js') initialCode = '// Logic';
 
         projectFiles[name] = initialCode;
         input.value = '';
         renderFilesList();
         switchFile(name);
-        showToast(`Файл ${name} добавлен!`);
+        showToast(currentLang === 'ru' ? `Файл ${name} добавлен!` : `File ${name} added!`);
     });
 
     document.addEventListener('click', (e) => {
@@ -323,14 +379,14 @@
             const cdnTag = e.target.getAttribute('data-cdn');
             switchFile('index.html');
             let code = window.editor.getValue();
-            if (code.includes(cdnTag)) return showToast("Библиотека уже подключена!", "error");
+            if (code.includes(cdnTag)) return showToast(currentLang === 'ru' ? "Библиотека уже подключена!" : "Library already connected!", "error");
 
             if (code.includes('</head>')) code = code.replace('</head>', `    ${cdnTag}\n</head>`);
             else code = cdnTag + "\n" + code;
             
             window.editor.setValue(code);
             projectFiles["index.html"] = code;
-            showToast("Библиотека подключена!");
+            showToast(currentLang === 'ru' ? "Библиотека подключена!" : "Library connected!");
         });
     });
 
@@ -355,11 +411,11 @@
             testWindow.document.write(compiled);
             testWindow.document.close();
         } else {
-            showToast("Всплывающее окно заблокировано!", "error");
+            showToast(currentLang === 'ru' ? "Всплывающее окно заблокировано!" : "Popup blocked!", "error");
         }
     });
 
-    // --- ЛОГИКА ГАЛЕРЕИ И ПОИСКА ---
+    // --- ЛОГИКА ГАЛЕРЕИ, СЧЕТЧИКОВ И ДАТЫ ---
     const viewToggleBtn = document.getElementById('viewToggleBtn');
     const editorContainer = document.getElementById('editor-container');
     const storeContainer = document.getElementById('store-container');
@@ -370,19 +426,18 @@
         if (storeContainer.classList.contains('hidden')) {
             storeContainer.classList.remove('hidden');
             editorContainer.classList.add('hidden');
-            viewToggleBtn.innerText = 'Редактор';
+            viewToggleBtn.innerText = i18n[currentLang].editor;
             loadStoreSites();
         } else {
             storeContainer.classList.add('hidden');
             editorContainer.classList.remove('hidden');
-            viewToggleBtn.innerText = 'Галерея';
+            viewToggleBtn.innerText = i18n[currentLang].gallery;
         }
     });
 
     async function loadStoreSites() {
-        storeGrid.innerHTML = '<span style="color:#666; font-size:14px;">Загрузка галереи...</span>';
+        storeGrid.innerHTML = `<span style="color:#666; font-size:14px;">${i18n[currentLang].loadingGallery}</span>`;
         try {
-            // Запрашиваем только те, которые отмечены как публичные
             const q = query(collection(db, "published_sites"), where("isPublic", "==", true));
             const querySnapshot = await getDocs(q);
             storeGrid.innerHTML = '';
@@ -391,42 +446,46 @@
 
             querySnapshot.forEach((docSnap) => {
                 const data = docSnap.data();
-                if (data.status !== 'online') return; // Фильтруем выключенные на стороне клиента
+                if (data.status !== 'online') return; 
                 
                 hasVisibleSites = true;
                 const siteName = docSnap.id;
-                const desc = data.description || 'Описание отсутствует.';
+                const desc = data.description || (currentLang === 'ru' ? 'Описание отсутствует.' : 'No description provided.');
+                const viewsCount = data.views || 0;
+                
+                const dateStr = data.createdAt ? new Date(data.createdAt).toLocaleDateString(currentLang === 'ru' ? 'ru-RU' : 'en-US') : '---';
                 
                 const card = document.createElement('div');
                 card.className = 'store-card';
-                // Добавляем атрибуты для удобного поиска
                 card.setAttribute('data-name', siteName.toLowerCase());
                 card.setAttribute('data-desc', desc.toLowerCase());
                 
                 card.innerHTML = `
                     <h4>/${siteName}</h4>
                     <p>${desc}</p>
-                    <a href="/site/${siteName}" target="_blank">Перейти</a>
+                    <div style="font-size: 11px; color: #666; display: flex; justify-content: space-between; margin-top: auto; border-top: 1px solid #1f1f1f; padding-top: 8px;">
+                        <span>${i18n[currentLang].views}: ${viewsCount}</span>
+                        <span>${i18n[currentLang].released}: ${dateStr}</span>
+                    </div>
+                    <a href="/site/${siteName}" target="_blank">${i18n[currentLang].openBtn}</a>
                 `;
                 storeGrid.appendChild(card);
             });
 
             if (!hasVisibleSites) {
-                storeGrid.innerHTML = '<span style="color:#666; font-size:14px;">В галерее пока нет сайтов. Опубликуйте свой первым!</span>';
+                storeGrid.innerHTML = `<span style="color:#666; font-size:14px;">${i18n[currentLang].emptyGallery}</span>`;
             }
         } catch (err) {
-            storeGrid.innerHTML = `<span style="color:#ef4444; font-size:14px;">Ошибка: ${err.message}</span>`;
+            storeGrid.innerHTML = `<span style="color:#ef4444; font-size:14px;">Error: ${err.message}</span>`;
         }
     }
 
     storeSearchInput.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
         const cards = document.querySelectorAll('.store-card');
-        
         cards.forEach(card => {
             const name = card.getAttribute('data-name');
             const desc = card.getAttribute('data-desc');
-            
             if (name.includes(term) || desc.includes(term)) {
                 card.style.display = 'flex';
             } else {
@@ -434,8 +493,12 @@
             }
         });
     });
-    // --------------------------------------------------------
 
+    document.getElementById('siteNameInput').addEventListener('input', () => {
+        currentProjectCreatedAt = null; 
+    });
+
+    // --- ОБРАБОТКА СТРАНИЦЫ САЙТА (МЕТРИКИ И ПРОСМОТРЫ) ---
     const path = window.location.pathname;
     const segments = path.split('/').filter(Boolean); 
 
@@ -444,6 +507,7 @@
         loadSiteFromDatabase(siteName);
     } else {
         document.getElementById('builder-mode').style.display = 'flex';
+        switchLanguage('en'); 
         initBuilder();
     }
 
@@ -451,14 +515,15 @@
         document.body.innerHTML = `<div id="site-runtime-wrapper" style="width:100vw; height:100vh; margin:0; padding:0; overflow:hidden; background:#0d0d0d;"></div>`;
         const wrapper = document.getElementById('site-runtime-wrapper');
 
-        const offlineHTML = `<div style="height:100vh; display:flex; align-items:center; justify-content:center; background:#0d0d0d;"><h1 style="color:#ef4444;">Сайт выключен</h1></div>`;
-        const restartingHTML = `<div style="height:100vh; display:flex; align-items:center; justify-content:center; background:#0d0d0d;"><h1 style="color:#6b7280;">Перезагрузка...</h1></div>`;
+        const offlineHTML = `<div style="height:100vh; display:flex; align-items:center; justify-content:center; background:#0d0d0d;"><h1 style="color:#ef4444;">${i18n[currentLang].siteOffline}</h1></div>`;
+        const restartingHTML = `<div style="height:100vh; display:flex; align-items:center; justify-content:center; background:#0d0d0d;"><h1 style="color:#6b7280;">${i18n[currentLang].siteRestarting}</h1></div>`;
 
         try {
             const siteRef = doc(db, "published_sites", name);
             let isUnlocked = false;
+            let viewsIncremented = false;
 
-            onSnapshot(siteRef, (docSnap) => {
+            onSnapshot(siteRef, async (docSnap) => {
                 if (!docSnap.exists()) {
                     wrapper.innerHTML = offlineHTML;
                     return;
@@ -467,6 +532,13 @@
                 const data = docSnap.data();
                 const status = data.status || 'online';
                 const sitePassword = data.password || '';
+
+                if (!viewsIncremented && status === 'online') {
+                    viewsIncremented = true;
+                    try {
+                        await updateDoc(siteRef, { views: increment(1) });
+                    } catch (e) { console.error(e); }
+                }
 
                 if (data.tabTitle) document.title = data.tabTitle;
                 if (data.faviconUrl) {
@@ -481,13 +553,13 @@
 
                 if (sitePassword.trim() !== '' && !isUnlocked) {
                     wrapper.innerHTML = `
-                        <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d0d0d;">
-                            <h2 style="color: #fff; margin-bottom: 20px;">Введите пароль</h2>
+                        <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d0d0d; font-family: sans-serif;">
+                            <h2 style="color: #fff; margin-bottom: 20px;">${i18n[currentLang].enterPass}</h2>
                             <div style="display: flex; gap: 10px;">
-                                <input type="password" id="unlock-pass" style="padding: 12px; background: #141414; color: #fff; border: 1px solid #262626;">
-                                <button id="unlock-btn" style="padding: 12px 20px; background: #4f46e5; color: #fff; border: none;">Войти</button>
+                                <input type="password" id="unlock-pass" style="padding: 12px; background: #141414; color: #fff; border: 1px solid #262626; border-radius:4px;">
+                                <button id="unlock-btn" style="padding: 12px 20px; background: #4f46e5; color: #fff; border: none; font-weight:bold; border-radius:4px; cursor:pointer;">${i18n[currentLang].unlockBtn}</button>
                             </div>
-                            <p id="unlock-error" style="color: #ef4444; display: none; margin-top: 15px;">Неверный пароль!</p>
+                            <p id="unlock-error" style="color: #ef4444; display: none; margin-top: 15px;">${i18n[currentLang].wrongPass}</p>
                         </div>`;
                     document.getElementById('unlock-btn').addEventListener('click', () => {
                         if (document.getElementById('unlock-pass').value === sitePassword) {
@@ -510,15 +582,15 @@
                     if (!iframe) {
                         wrapper.innerHTML = `<iframe id="runtime-iframe" style="width: 100%; height: 100%; border: none; display: block; background: #fff;"></iframe>`;
                         iframe = document.getElementById('runtime-iframe');
-                        iframe.srcdoc = data.code || '<h1>Пустой сайт</h1>';
+                        iframe.srcdoc = data.code || '<h1>Empty</h1>';
                     } else if (iframe.dataset.currentCode !== data.code) {
-                        iframe.srcdoc = data.code || '<h1>Пустой сайт</h1>';
+                        iframe.srcdoc = data.code || '<h1>Empty</h1>';
                         iframe.dataset.currentCode = data.code || '';
                     }
                 }
             }
         } catch (e) {
-            wrapper.innerHTML = `<div style="height:100vh; display:flex; align-items:center; justify-content:center; color:#ef4444;">Ошибка: ${e.message}</div>`;
+            wrapper.innerHTML = `<div style="height:100vh; display:flex; align-items:center; justify-content:center; color:#ef4444;">Error: ${e.message}</div>`;
         }
     }
 
@@ -557,7 +629,7 @@
 
         async function loadUserHistory(uid) {
             const historyList = document.getElementById('historyList');
-            historyList.innerHTML = '<span style="color:#666; font-size:12px;">Загрузка...</span>'; 
+            historyList.innerHTML = '<span style="color:#666; font-size:12px;">...</span>'; 
 
             const q = query(collection(db, "published_sites"), where("ownerId", "==", uid));
             const querySnapshot = await getDocs(q);
@@ -577,16 +649,16 @@
                 li.innerHTML = `
                     <div class="history-header">
                         <div class="history-header-left">
-                            <span class="status-dot ${dotClass}" title="Статус: ${status}"></span>
+                            <span class="status-dot ${dotClass}" title="Status: ${status}"></span>
                             <a href="/site/${siteName}" target="_blank">/${siteName}</a>
                         </div>
                         <div class="menu-container">
                             <button class="dots-btn">⋮</button>
                             <div class="dropdown-content">
-                                <button class="control-btn" data-action="edit" data-id="${siteName}">Редактировать код</button>
-                                <button class="control-btn" data-action="power" data-id="${siteName}" data-status="${status}">${status === 'offline' ? 'Включить сайт' : 'Выключить сайт'}</button>
-                                <button class="control-btn" data-action="restart" data-id="${siteName}">Перезагрузить</button>
-                                <button class="control-btn btn-delete" data-action="delete" data-id="${siteName}">Удалить навсегда</button>
+                                <button class="control-btn" data-action="edit" data-id="${siteName}">${i18n[currentLang].editCode}</button>
+                                <button class="control-btn" data-action="power" data-id="${siteName}" data-status="${status}">${status === 'offline' ? i18n[currentLang].powerOn : i18n[currentLang].powerOff}</button>
+                                <button class="control-btn" data-action="restart" data-id="${siteName}">${i18n[currentLang].restartSite}</button>
+                                <button class="control-btn btn-delete" data-action="delete" data-id="${siteName}">${i18n[currentLang].deleteForever}</button>
                             </div>
                         </div>
                     </div>`;
@@ -611,12 +683,12 @@
                             const data = snap.data();
                             projectFiles = data.files || { "index.html": data.code };
                             currentFileName = "index.html";
+                            currentProjectCreatedAt = data.createdAt || null;
                             
                             window.editor.setValue(projectFiles[currentFileName]);
                             updateEditorLanguage(currentFileName);
                             renderFilesList();
 
-                            // Подгружаем настройки сайта обратно в тулбар
                             document.getElementById('siteNameInput').value = siteName;
                             document.getElementById('siteDescInput').value = data.description || '';
                             document.getElementById('sitePasswordInput').value = data.password || '';
@@ -624,19 +696,19 @@
                             document.getElementById('customFavicon').value = data.faviconUrl || '';
                             document.getElementById('isPublicCheckbox').checked = data.isPublic || false;
                             
-                            showToast("Проект успешно загружен!");
+                            showToast(currentLang === 'ru' ? "Проект успешно загружен!" : "Project successfully loaded!");
                         }
                     } 
                     else if (action === 'power') {
                         const currentStatus = e.target.getAttribute('data-status');
                         const newStatus = currentStatus === 'offline' ? 'online' : 'offline';
                         await updateDoc(siteRef, { status: newStatus });
-                        showToast(newStatus === 'online' ? "Сайт запущен!" : "Сайт выключен.");
+                        showToast(newStatus === 'online' ? (currentLang === 'ru' ? "Сайт запущен!" : "Site is live!") : (currentLang === 'ru' ? "Сайт выключен." : "Site turned off."));
                         loadUserHistory(currentUser.uid);
                     }
                     else if (action === 'restart') {
                         await updateDoc(siteRef, { status: 'restarting' });
-                        showToast("Перезагрузка...");
+                        showToast(currentLang === 'ru' ? "Перезагрузка..." : "Restarting...");
                         loadUserHistory(currentUser.uid);
                         setTimeout(async () => {
                             await updateDoc(siteRef, { status: 'online' });
@@ -644,9 +716,9 @@
                         }, 3000);
                     }
                     else if (action === 'delete') {
-                        if (confirm(`Удалить сайт ${siteName}?`)) {
+                        if (confirm(currentLang === 'ru' ? `Удалить сайт ${siteName}?` : `Delete site ${siteName}?`)) {
                             await deleteDoc(siteRef);
-                            showToast("Сайт удален");
+                            showToast(currentLang === 'ru' ? "Сайт удален" : "Site deleted");
                             loadUserHistory(currentUser.uid);
                         }
                     }
@@ -655,7 +727,7 @@
         }
 
         document.getElementById('publishBtn').addEventListener('click', async () => {
-            if (!currentUser) return showToast("Войдите в аккаунт!", "error");
+            if (!currentUser) return showToast(currentLang === 'ru' ? "Войдите в аккаунт!" : "Log in first!", "error");
             
             const siteName = document.getElementById('siteNameInput').value.trim();
             const description = document.getElementById('siteDescInput').value.trim();
@@ -664,7 +736,7 @@
             const faviconUrl = document.getElementById('customFavicon').value.trim();
             const isPublic = document.getElementById('isPublicCheckbox').checked;
             
-            if (!siteName || siteName.includes('/')) return showToast("Введите корректное имя!", "error");
+            if (!siteName || siteName.includes('/')) return showToast(currentLang === 'ru' ? "Введите корректное имя!" : "Enter valid name!", "error");
 
             const publishBtn = document.getElementById('publishBtn');
             publishBtn.disabled = true;
@@ -672,11 +744,12 @@
             const container = document.getElementById('toast-container');
             const loadingToast = document.createElement('div');
             loadingToast.className = 'toast toast-loading';
-            loadingToast.innerHTML = '<span class="spinner"></span> Сохранение...';
+            loadingToast.innerHTML = `<span class="spinner"></span> ${currentLang === 'ru' ? 'Сохранение...' : 'Saving...'}`;
             container.appendChild(loadingToast);
 
             try {
                 const compiled = compileProject();
+                const timestamp = currentProjectCreatedAt || Date.now();
                 
                 await setDoc(doc(db, "published_sites", siteName), {
                     ownerId: currentUser.uid,
@@ -687,20 +760,21 @@
                     tabTitle: tabTitle,
                     faviconUrl: faviconUrl,
                     isPublic: isPublic, 
-                    status: 'online'
+                    status: 'online',
+                    createdAt: timestamp
                 }, { merge: true });
 
+                currentProjectCreatedAt = timestamp;
                 loadingToast.remove();
-                showToast("Проект успешно сохранен!");
+                showToast(currentLang === 'ru' ? "Проект успешно сохранен!" : "Project saved successfully!");
                 loadUserHistory(currentUser.uid);
                 
-                // Если галерея открыта, обновляем её, чтобы увидеть (или скрыть) изменения
                 if (!storeContainer.classList.contains('hidden')) {
                     loadStoreSites();
                 }
             } catch (err) {
                 loadingToast.remove();
-                showToast(`Ошибка сохранения: ${err.message}`, 'error');
+                showToast(`Error: ${err.message}`, 'error');
             } finally {
                 publishBtn.disabled = false;
             }
