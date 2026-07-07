@@ -26,8 +26,9 @@
         .store-card { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 6px; display: flex; flex-direction: column; gap: 12px; }
         .store-card h4 { margin: 0; font-size: 16px; color: #fff; word-break: break-all; }
         .store-card p { margin: 0; font-size: 13px; color: #aaa; flex: 1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
-        .store-card a { display: block; text-align: center; background: var(--accent); color: #fff; text-decoration: none; padding: 8px; border-radius: 4px; font-weight: bold; font-size: 13px; transition: 0.2s; }
-        .store-card a:hover { filter: brightness(1.2); }
+        .store-card a, .clone-btn { display: block; text-align: center; color: #fff; text-decoration: none; padding: 8px; border-radius: 4px; font-weight: bold; font-size: 13px; transition: 0.2s; border: none; cursor: pointer; }
+        .store-card a { background: var(--accent); }
+        .store-card a:hover, .clone-btn:hover { filter: brightness(1.2); }
 
         input, button { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 4px; outline: none; font-size: 14px; }
         button { background: var(--accent); color: #fff; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
@@ -205,7 +206,8 @@
             loadingGallery: "Loading gallery...", emptyGallery: "No sites in the gallery yet. Publish yours first!",
             views: "Views", released: "Released", openBtn: "Open", editCode: "Edit code", 
             powerOff: "Turn off site", powerOn: "Turn on site", restartSite: "Restart", deleteForever: "Delete forever",
-            siteOffline: "Site is offline", siteRestarting: "Restarting...", enterPass: "Enter password", unlockBtn: "Unlock", wrongPass: "Wrong password!"
+            siteOffline: "Site is offline", siteRestarting: "Restarting...", enterPass: "Enter password", unlockBtn: "Unlock", 
+            wrongPass: "Wrong password!", cloneBtn: "Clone code"
         },
         ru: {
             login: "Войти через Google", account: "Аккаунт:", projectFiles: "ФАЙЛЫ ПРОЕКТА", filePlaceholder: "style.css или script.js",
@@ -216,7 +218,8 @@
             loadingGallery: "Загрузка галереи...", emptyGallery: "В галерее пока нет сайтов. Опубликуйте свой первым!",
             views: "Просмотров", released: "Выпущено", openBtn: "Перейти", editCode: "Редактировать код",
             powerOff: "Выключить сайт", powerOn: "Включить сайт", restartSite: "Перезагрузить", deleteForever: "Удалить навсегда",
-            siteOffline: "Сайт выключен", siteRestarting: "Перезагрузка...", enterPass: "Введите пароль", unlockBtn: "Войти", wrongPass: "Неверный пароль!"
+            siteOffline: "Сайт выключен", siteRestarting: "Перезагрузка...", enterPass: "Введите пароль", unlockBtn: "Войти", 
+            wrongPass: "Неверный пароль!", cloneBtn: "Забрать код"
         }
     };
     
@@ -482,11 +485,14 @@
                 card.innerHTML = `
                     <h4>/${siteName}</h4>
                     <p>${desc}</p>
-                    <div style="font-size: 11px; color: #666; display: flex; justify-content: space-between; margin-top: auto; border-top: 1px solid #1f1f1f; padding-top: 8px;">
+                    <div style="font-size: 11px; color: #666; display: flex; justify-content: space-between; margin-top: auto; border-top: 1px solid #1f1f1f; padding-top: 8px; margin-bottom: 10px;">
                         <span>${i18n[currentLang].views}: ${viewsCount}</span>
                         <span>${i18n[currentLang].released}: ${dateStr}</span>
                     </div>
-                    <a href="/site/${siteName}" target="_blank">${i18n[currentLang].openBtn}</a>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="/site/${siteName}" target="_blank" style="flex: 1; text-align: center; background: var(--accent); color: #fff; text-decoration: none; padding: 8px; border-radius: 4px; font-weight: bold; font-size: 13px;">${i18n[currentLang].openBtn}</a>
+                        <button class="clone-btn" data-site="${siteName}" style="flex: 1; background: #10b981;">${i18n[currentLang].cloneBtn}</button>
+                    </div>
                 `;
                 storeGrid.appendChild(card);
             });
@@ -498,6 +504,40 @@
             storeGrid.innerHTML = `<span style="color:#ef4444; font-size:14px;">Error: ${err.message}</span>`;
         }
     }
+
+    storeGrid.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('clone-btn')) {
+            const siteToClone = e.target.getAttribute('data-site');
+            
+            try {
+                const siteRef = doc(db, "published_sites", siteToClone);
+                const snap = await getDoc(siteRef);
+                
+                if (snap.exists()) {
+                    const data = snap.data();
+                    
+                    projectFiles = data.files || { "index.html": data.code };
+                    currentFileName = "index.html";
+                    currentProjectCreatedAt = null; 
+                    
+                    document.getElementById('siteNameInput').value = siteToClone + "-copy";
+                    document.getElementById('siteDescInput').value = (currentLang === 'ru' ? "Копия: " : "Copy of ") + (data.description || siteToClone);
+                    
+                    window.editor.setValue(projectFiles[currentFileName]);
+                    updateEditorLanguage(currentFileName);
+                    renderFilesList();
+                    
+                    storeContainer.classList.add('hidden');
+                    editorContainer.classList.remove('hidden');
+                    viewToggleBtn.innerText = i18n[currentLang].gallery;
+                    
+                    showToast(currentLang === 'ru' ? "Код успешно перенесен в редактор!" : "Code successfully cloned into editor!");
+                }
+            } catch (err) {
+                showToast(`Error: ${err.message}`, "error");
+            }
+        }
+    });
 
     storeSearchInput.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
