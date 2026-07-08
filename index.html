@@ -3,19 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>InvestX - Торговый Терминал</title>
+  <title>InvestX Pro - Торговый Терминал</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --bg-dark: #0b0f19;
-      --bg-panel: #151f32;
-      --bg-input: #1e293b;
+      --bg-dark: #070a13;
+      --bg-panel: #111827;
+      --bg-input: #1f2937;
       --accent-blue: #3b82f6;
       --success: #10b981;
       --danger: #ef4444;
-      --text-main: #f8fafc;
-      --text-muted: #64748b;
-      --border: #243249;
+      --text-main: #f9fafb;
+      --text-muted: #6b7280;
+      --border: #1f2937;
     }
 
     body {
@@ -35,25 +36,25 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: radial-gradient(circle at center, #151f32 0%, #0b0f19 100%);
+      background: radial-gradient(circle at center, #111827 0%, #070a13 100%);
     }
 
     .glass-panel {
-      background: rgba(21, 31, 50, 0.8);
+      background: rgba(17, 24, 39, 0.8);
       backdrop-filter: blur(12px);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 40px;
       text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-      max-width: 400px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      max-width: 420px;
       width: 90%;
     }
 
-    .glass-panel h1 { font-size: 32px; margin: 0 0 10px 0; background: linear-gradient(90deg, #3b82f6, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .glass-panel h1 { font-size: 36px; margin: 0 0 10px 0; background: linear-gradient(90deg, #3b82f6, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-    /* Основной контейнер */
-    .app-container { max-width: 1300px; margin: 0 auto; padding: 20px; }
+    /* Главный контейнер */
+    .app-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
 
     header {
       display: flex;
@@ -79,37 +80,37 @@
     .panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     h3 { margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 15px; }
 
-    /* Инпуты и Кнопки */
+    /* Формы */
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-muted); }
     input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
     input:focus { outline: none; border-color: var(--accent-blue); }
 
-    .btn { background: var(--accent-blue); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%; box-sizing: border-box; }
+    .btn { background: var(--accent-blue); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%; box-sizing: border-box; text-align: center; }
     .btn:hover { background: #2563eb; transform: translateY(-1px); }
     .btn-google { background: #ea4335; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; }
     .btn-google:hover { background: #d33828; }
     
-    /* Список проектов */
-    .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-    .project-card { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 10px; padding: 15px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
-    .project-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
+    /* Сетка рынка */
+    .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+    .project-card { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 10px; padding: 18px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
+    .project-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
 
-    /* Прогресс-бар */
-    .progress-bar { width: 100%; background: #1e293b; height: 6px; border-radius: 3px; margin: 10px 0; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--accent-blue); width: 0%; transition: width 0.3s; }
-
-    /* Модальное окно (Лесенка / Биржевой стакан) */
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(7, 10, 17, 0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 100; }
-    .modal-content { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 500px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); position: relative; }
+    /* Модальное окно (Торговый Терминал с Графиком) */
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 5, 10, 0.9); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 100; overflow-y: auto; }
+    .modal-content { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 650px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.7); position: relative; margin: 20px auto; }
     .close-modal { position: absolute; top: 15px; right: 20px; font-size: 24px; color: var(--text-muted); cursor: pointer; }
     .close-modal:hover { color: #fff; }
 
-    /* Стили торгового стакана (Лесенки) */
-    .trading-ladder { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin: 15px 0; font-family: monospace; font-size: 13px; }
-    .ladder-row { display: flex; justify-content: space-between; padding: 4px 8px; border-radius: 4px; margin-bottom: 2px; }
-    .ladder-row.deposit { background: rgba(16, 185, 129, 0.08); color: var(--success); }
-    .ladder-row.withdraw { background: rgba(239, 68, 68, 0.08); color: var(--danger); }
+    /* Окно графика */
+    .chart-container { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 20px; height: 220px; position: relative; }
+
+    /* Информационная Лесенка показателей */
+    .trading-ladder { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 13px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ladder-stat { background: #1f2937; padding: 8px 12px; border-radius: 6px; border-left: 3px solid var(--accent-blue); }
+    .ladder-stat.my-shares { border-left-color: var(--success); }
+    .ladder-stat span { display: block; font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+    .ladder-stat b { font-size: 15px; color: #fff; }
 
     .trade-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
     .tab-btn { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: var(--text-muted); cursor: pointer; font-weight: 600; }
@@ -124,10 +125,10 @@
   <div id="auth-section" class="auth-wrapper">
     <div class="glass-panel">
       <h1>InvestX Terminal</h1>
-      <p>Торговля активами и стартапами в реальном времени. Войди через Google, чтобы получить демо-баланс 5.00$.</p>
+      <p>Симулятор биржи на кривых ликвидности. Войди через Google, получи стартовые 5.00$ и начни разгонять баланс.</p>
       <button id="login-btn" class="btn btn-google">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
-        Авторизация через Google
+        Авторизоваться через Google
       </button>
     </div>
   </div>
@@ -137,34 +138,30 @@
       <a href="#" class="logo">Invest<span>X</span></a>
       <div class="user-info">
         <div class="balance-box">
-          <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Личный Баланс</div>
-          <div class="balance-amount" id="user-balance">Загрузка...</div>
+          <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Твой Свободный Баланс</div>
+          <div class="balance-amount" id="user-balance">0.00$</div>
         </div>
-        <button id="logout-btn" class="btn" style="background: #334155; width: auto; padding: 8px 15px;">Выйти</button>
+        <button id="logout-btn" class="btn" style="background: #374151; width: auto; padding: 8px 15px;">Выйти</button>
       </div>
     </header>
 
     <div class="dashboard-grid">
       <aside class="panel">
-        <h3>Регистрация IPO</h3>
+        <h3>Регистрация Нового IPO</h3>
         <div class="form-group">
-          <label>Название инвестиции</label>
-          <input type="text" id="project-title" placeholder="Crypto-Bot 2.0">
+          <label>Название актива / Компании</label>
+          <input type="text" id="project-title" placeholder="Например: SpaceX Clone">
         </div>
-        <div class="form-group">
-          <label>Целевой объем сборов ($)</label>
-          <input type="number" id="project-goal" placeholder="50" min="1">
-        </div>
-        <button id="create-project-btn" class="btn">Выпустить на биржу</button>
+        <button id="create-project-btn" class="btn">Выпустить на Торги</button>
       </aside>
 
       <main class="panel">
         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-          <h3>Активные активы на рынке</h3>
-          <span style="color: var(--success); font-size: 13px;">● Соединение активно</span>
+          <h3>Котировки акций в реальном времени</h3>
+          <span style="color: var(--success); font-size: 13px;">● Подключено к пулу</span>
         </div>
         <div id="market-list" class="market-grid">
-          <p style="color: var(--text-muted);">Загрузка стаканов цен...</p>
+          <p style="color: var(--text-muted);">Синхронизация стаканов...</p>
         </div>
       </main>
     </div>
@@ -173,29 +170,45 @@
   <div id="trading-modal" class="modal hidden">
     <div class="modal-content">
       <span class="close-modal" id="close-modal-btn">&times;</span>
-      <h2 id="modal-project-title" style="margin: 0 0 5px 0;">Название Проекта</h2>
+      <h2 id="modal-project-title" style="margin: 0;">Название</h2>
       <p id="modal-project-ceo" style="font-size: 12px; color: var(--text-muted); margin: 0 0 15px 0;">CEO: Имя</p>
 
+      <div class="chart-container">
+        <canvas id="tradingChart"></canvas>
+      </div>
+
       <div class="trading-ladder">
-        <div style="text-align: center; color: var(--text-muted); font-size: 11px; margin-bottom: 5px; text-transform: uppercase;">Биржевой стакан (Очередь ордеров)</div>
-        <div class="ladder-row withdraw"><span>Вывод (Ask)</span><span id="ladder-ask">0.00$</span></div>
-        <div class="ladder-row" style="background: rgba(255,255,255,0.03); font-weight: bold; justify-content: center; color: #fff;" id="ladder-spread">Пул: 0.00$</div>
-        <div class="ladder-row deposit"><span>Ввод (Bid)</span><span id="ladder-bid">0.00$</span></div>
+        <div class="ladder-stat">
+          <span>Цена одной доли</span>
+          <b id="ladder-price">1.00$</b>
+        </div>
+        <div class="ladder-stat">
+          <span>Капитализация пула</span>
+          <b id="ladder-pool">0.00$</b>
+        </div>
+        <div class="ladder-stat my-shares">
+          <span>Твои доли (Акции)</span>
+          <b id="ladder-my-shares">0.0000</b>
+        </div>
+        <div class="ladder-stat my-shares">
+          <span>Стоимость твоих долей</span>
+          <b id="ladder-my-value">0.00$</b>
+        </div>
       </div>
 
       <div class="trade-tabs">
-        <button class="tab-btn tab-in active" id="tab-deposit">ВНЕСТИ</button>
-        <button class="tab-btn tab-out" id="tab-withdraw">ВЫВЕСТИ</button>
+        <button class="tab-btn tab-in active" id="tab-deposit">КУПИТЬ ДОЛИ (ВНЕСТИ)</button>
+        <button class="tab-btn tab-out" id="tab-withdraw">ПРОДАТЬ ДОЛИ (ВЫВЕСТИ)</button>
       </div>
 
       <div class="form-group">
-        <label id="input-action-label">Сумма инвестирования ($)</label>
-        <input type="number" id="trade-amount" placeholder="1.00" min="0.1" step="0.1">
-        <span class="fee-text">Комиссия биржи (2%): <span id="fee-amount">0.00$</span></span>
-        <span class="fee-text" style="color: #fff;">Итого к списанию/получению: <span id="total-amount">0.00$</span></span>
+        <label id="input-action-label">Сколько баксов вложить ($)</label>
+        <input type="number" id="trade-amount" placeholder="1.00" min="0.01" step="0.1">
+        <span class="fee-text" id="fee-row" style="display:none;">Комиссия за мгновенный выход (10%): <span id="fee-amount" style="color:var(--danger)">0.00$</span></span>
+        <span class="fee-text" style="color: #fff; font-weight:600;">Итоговый расчет операции: <span id="total-amount">0.00$</span></span>
       </div>
 
-      <button id="execute-trade-btn" class="btn" style="background: var(--success);">Подтвердить ордер</button>
+      <button id="execute-trade-btn" class="btn" style="background: var(--success);">Исполнить рыночный ордер</button>
     </div>
   </div>
 
@@ -203,46 +216,50 @@
     import { firebaseConfig } from './config.js';
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // UI элементы
+    // UI Элементы
     const authSection = document.getElementById('auth-section');
     const appSection = document.getElementById('app-section');
     const balanceDisplay = document.getElementById('user-balance');
     const tradingModal = document.getElementById('trading-modal');
 
-    let currentSelectedProjectId = null;
-    let currentTradeMode = 'deposit'; // 'deposit' или 'withdraw'
+    let currentProjectId = null;
+    let currentTradeMode = 'deposit'; 
     let userBalance = 0;
+    let myCurrentShares = 0;
     let projectInvestedGlobal = 0;
 
-    // Вход / Выход
+    // Переменные для графика Chart.js
+    let chartInstance = null;
+    let chartTimer = null;
+
+    // Авторизация
     document.getElementById('login-btn').addEventListener('click', () => signInWithPopup(auth, provider));
     document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
 
-    // СЛУШАТЕЛЬ АВТОРИЗАЦИИ И БАЛАНСА В РЕАЛЬНОМ ВРЕМЕНИ
+    // СЛУШАТЕЛЬ БАЛАНСА В РЕАЛЬНОМ ВРЕМЕНИ
     let userUnsubscribe = null;
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         authSection.classList.add('hidden');
         appSection.classList.remove('hidden');
 
-        // Подписываемся на изменения баланса юзера в реальном времени!
         const userRef = doc(db, "users", user.uid);
         userUnsubscribe = onSnapshot(userRef, async (snapshot) => {
           if (!snapshot.exists()) {
-            // Если юзер зашел впервые - создаем профиль со стартовыми 5$
             await setDoc(userRef, { email: user.email, balance: 5.00 });
             userBalance = 5.00;
           } else {
             userBalance = snapshot.data().balance;
           }
           balanceDisplay.textContent = userBalance.toFixed(2) + "$";
+          if (currentProjectId) updateModalStatsLive();
         });
 
         loadMarket();
@@ -253,188 +270,324 @@
       }
     });
 
-    // СОЗДАНИЕ IPO ПРОЕКТА
+    // МАТЕМАТИКА ФОРМУЛЫ ЦЕНЫ (Кривая ликвидности / Пул)
+    // Стартовая цена = 1.00$. Каждый вложенный доллар поднимает цену на 0.05$.
+    function calculatePrice(investedPool) {
+      return 1.00 + (investedPool * 0.05);
+    }
+
+    // СОЗДАНИЕ IPO СТАРТАПА
     document.getElementById('create-project-btn').addEventListener('click', async () => {
       const title = document.getElementById('project-title').value.trim();
-      const goal = parseFloat(document.getElementById('project-goal').value);
-
-      if (title && goal > 0) {
+      if (title) {
         await addDoc(collection(db, "projects"), {
           creatorId: auth.currentUser.uid,
-          creatorName: auth.currentUser.displayName || "Трейдер",
+          creatorName: auth.currentUser.displayName || "Инвестор",
           title: title,
-          goal: goal,
-          invested: 0
+          invested: 0 // Изначально пул пустой, цена 1$
         });
         document.getElementById('project-title').value = '';
-        document.getElementById('project-goal').value = '';
       } else {
-        alert("Укажите правильное название и сумму.");
+        alert("Укажите название проекта");
       }
     });
 
-    // ЗАГРУЗКА РЫНКА (КАРТОЧЕК ПРОЕКТОВ)
+    // СЛУШАТЕЛЬ ВСЕГО РЫНКА КАРТОЧЕК
     function loadMarket() {
       onSnapshot(collection(db, "projects"), (snapshot) => {
         const marketList = document.getElementById('market-list');
         marketList.innerHTML = '';
 
         if (snapshot.empty) {
-          marketList.innerHTML = '<p style="color: var(--text-muted);">На бирже пока нет активов.</p>';
+          marketList.innerHTML = '<p style="color: var(--text-muted);">На рынке пока нет токенов.</p>';
           return;
         }
 
         snapshot.forEach((projectDoc) => {
           const project = projectDoc.data();
-          const percent = Math.min((project.invested / project.goal) * 100, 100).toFixed(1);
+          const price = calculatePrice(project.invested);
 
           const card = document.createElement('div');
           card.className = 'project-card';
           card.innerHTML = `
             <div>
-              <h4 style="margin: 0 0 4px 0;">${project.title}</h4>
+              <h4 style="margin: 0 0 5px 0; font-size:16px;">${project.title}</h4>
               <span style="font-size: 11px; color: var(--text-muted);">CEO: ${project.creatorName}</span>
-              <div class="progress-bar"><div class="progress-fill" style="width: ${percent}%;"></div></div>
-              <div style="font-size: 12px; display:flex; justify-content:space-between;">
-                <span>Пул: <b>${project.invested.toFixed(2)}$</b></span>
-                <span>Цель: ${project.goal}$</span>
+              <div style="margin-top: 15px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size: 11px; color:var(--text-muted);">ЦЕНА АКЦИИ</div>
+                  <b style="font-size: 18px; color:var(--success);">${price.toFixed(2)}$</b>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size: 11px; color:var(--text-muted);">КАПИТАЛИЗАЦИЯ</div>
+                  <b style="font-size: 14px; color:#fff;">${project.invested.toFixed(2)}$</b>
+                </div>
               </div>
             </div>
-            <button class="btn" style="margin-top: 15px; padding: 6px; font-size: 13px; background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.3)">Открыть стакан сделок</button>
+            <button class="btn" style="margin-top:15px; padding:8px; font-size:13px; background: rgba(59,130,246,0.1); color: var(--accent-blue); border:1px solid rgba(59,130,246,0.2)">Открыть интерактивный график</button>
           `;
 
-          // Клик по карточке открывает Модальное Окно ("Лесенку")
           card.addEventListener('click', () => openTradingModal(projectDoc.id, project));
           marketList.appendChild(card);
         });
       });
     }
 
-    // ОТКРЫТИЕ ЛЕСЕНКИ (МОДАЛКИ)
+    // ОТКРЫТИЕ СТАКАНА И ЗАПУСК ЖИВОГО ГРАФИКА
+    let currentProjectListener = null;
+    let currentSharesListener = null;
+
     function openTradingModal(projectId, project) {
-      currentSelectedProjectId = projectId;
-      projectInvestedGlobal = project.invested;
+      currentProjectId = projectId;
       
       document.getElementById('modal-project-title').textContent = project.title;
       document.getElementById('modal-project-ceo').textContent = `CEO: ${project.creatorName}`;
-      
-      // Обновляем "лесенку" (стакан цен) в зависимости от текущих инвестиций
-      updateLadderUI(project.invested);
-      
-      // Сброс формы
+
+      // Сброс инпутов
       document.getElementById('trade-amount').value = '';
-      document.getElementById('fee-amount').textContent = '0.00$';
-      document.getElementById('total-amount').textContent = '0.00$';
       setTradeMode('deposit');
+
+      // Инициализируем график Chart.js бутафорскими точками, отталкиваясь от текущей цены
+      const startingPrice = calculatePrice(project.invested);
+      initTradingChart(startingPrice);
+
+      // Включаем живые подписки на изменения этого проекта и долей юзера
+      if (currentProjectListener) currentProjectListener();
+      if (currentSharesListener) currentSharesListener();
+
+      const projRef = doc(db, "projects", projectId);
+      currentProjectListener = onSnapshot(projRef, (snap) => {
+        if(snap.exists()) {
+          projectInvestedGlobal = snap.data().invested;
+          updateModalStatsLive();
+        }
+      });
+
+      const shareId = `shares_${auth.currentUser.uid}_${projectId}`;
+      const shareRef = doc(db, "shares", shareId);
+      currentSharesListener = onSnapshot(shareRef, (snap) => {
+        if(snap.exists()) {
+          myCurrentShares = snap.data().shares;
+        } else {
+          myCurrentShares = 0;
+        }
+        updateModalStatsLive();
+      });
 
       tradingModal.classList.remove('hidden');
     }
 
-    function updateLadderUI(invested) {
-      document.getElementById('ladder-spread').textContent = `Всего в пуле: ${invested.toFixed(2)}$`;
-      document.getElementById('ladder-ask').textContent = (invested + 1.25).toFixed(2) + "$";
-      document.getElementById('ladder-bid').textContent = Math.max(0, invested - 0.75).toFixed(2) + "$";
+    // ОБНОВЛЕНИЕ СТАТИСТИКИ И ЦЕН ВНУТРИ МОДАЛКИ В РЕАЛЬНОМ ВРЕМЕНИ
+    function updateModalStatsLive() {
+      const price = calculatePrice(projectInvestedGlobal);
+      const myValue = myCurrentShares * price;
+
+      document.getElementById('ladder-price').textContent = price.toFixed(2) + "$";
+      document.getElementById('ladder-pool').textContent = projectInvestedGlobal.toFixed(2) + "$";
+      document.getElementById('ladder-my-shares').textContent = myCurrentShares.toFixed(4);
+      document.getElementById('ladder-my-value').textContent = myValue.toFixed(2) + "$";
+
+      // Пушим реальную текущую цену в график
+      if (chartInstance) {
+        // Добавляем к графику небольшой живой шум, чтобы линия дышала как на настоящей бирже
+        const noise = (Math.random() - 0.5) * 0.02;
+        const animatedPrice = Math.max(0.1, price + noise);
+        
+        chartInstance.data.labels.push("");
+        chartInstance.data.datasets[0].data.push(animatedPrice);
+        
+        if (chartInstance.data.labels.length > 20) {
+          chartInstance.data.labels.shift();
+          chartInstance.data.datasets[0].data.shift();
+        }
+        chartInstance.update('none');
+      }
+
+      calculateTradeCalculations();
     }
 
-    // Закрытие модалки
-    document.getElementById('close-modal-btn').addEventListener('click', () => tradingModal.classList.add('hidden'));
+    // ИНИЦИАЛИЗАЦИЯ CHART.JS
+    function initTradingChart(startPrice) {
+      if (chartInstance) chartInstance.destroy();
+      if (chartTimer) clearInterval(chartTimer);
 
-    // Переключение вкладок Внести / Вывести в лесенке
+      const ctx = document.getElementById('tradingChart').getContext('2d');
+      
+      // Генерируем 10 стартовых точек истории
+      const dataPoints = [];
+      const labels = [];
+      for(let i=0; i<12; i++) {
+        labels.push("");
+        dataPoints.push(startPrice + (Math.random() - 0.5) * 0.04);
+      }
+      dataPoints[dataPoints.length - 1] = startPrice;
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Рыночная цена ($)',
+            data: dataPoints,
+            borderColor: '#3b82f6',
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: true,
+            backgroundColor: 'rgba(59, 130, 246, 0.05)',
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false } },
+            y: { grid: { color: '#1f2937' }, ticks: { color: '#6b7280' } }
+          }
+        }
+      });
+
+      // Запускаем таймер, который каждые 2 секунды дергает график, симулируя микро-торги
+      chartTimer = setInterval(() => {
+        updateModalStatsLive();
+      }, 2000);
+    }
+
+    // ЗАКРЫТИЕ МОДАЛКИ
+    document.getElementById('close-modal-btn').addEventListener('click', () => {
+      tradingModal.classList.add('hidden');
+      if (chartTimer) clearInterval(chartTimer);
+      if (currentProjectListener) currentProjectListener();
+      if (currentSharesListener) currentSharesListener();
+      currentProjectId = null;
+    });
+
+    // ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК (КУПИТЬ / ПРОДАТЬ)
     const tabDeposit = document.getElementById('tab-deposit');
     const tabWithdraw = document.getElementById('tab-withdraw');
     const execBtn = document.getElementById('execute-trade-btn');
+    const amountInput = document.getElementById('trade-amount');
 
     tabDeposit.addEventListener('click', () => setTradeMode('deposit'));
     tabWithdraw.addEventListener('click', () => setTradeMode('withdraw'));
 
     function setTradeMode(mode) {
       currentTradeMode = mode;
+      amountInput.value = '';
       if (mode === 'deposit') {
-        tabDeposit.classList.add('active');
-        tabWithdraw.classList.remove('active');
-        document.getElementById('input-action-label').textContent = "Сумма вклада в проект ($)";
-        execBtn.style.background = "var(--success)";
-        execBtn.textContent = "Исполнить ордер на Ввод";
+        tabDeposit.className = 'tab-btn tab-in active';
+        tabWithdraw.className = 'tab-btn tab-out';
+        document.getElementById('input-action-label').textContent = "Сколько баксов вложить в проект ($)";
+        document.getElementById('fee-row').style.display = 'none';
+        execBtn.style.background = 'var(--success)';
+        execBtn.textContent = "Исполнить ордер на Покупку";
       } else {
-        tabWithdraw.classList.add('active');
-        tabDeposit.classList.remove('active');
-        document.getElementById('input-action-label').textContent = "Сумма вывода из проекта ($)";
-        execBtn.style.background = "var(--danger)";
+        tabWithdraw.className = 'tab-btn tab-out active';
+        tabDeposit.className = 'tab-btn tab-in';
+        document.getElementById('input-action-label').textContent = "Сколько долей (акций) продать";
+        document.getElementById('fee-row').style.display = 'block';
+        execBtn.style.background = 'var(--danger)';
         execBtn.textContent = "Исполнить ордер на Вывод";
       }
-      calculateFees();
+      calculateTradeCalculations();
     }
 
-    // РАСЧЕТ КОМИССИИ В РЕАЛЬНОМ ВРЕМЕНИ (2%)
-    const tradeAmountInput = document.getElementById('trade-amount');
-    tradeAmountInput.addEventListener('input', calculateFees);
+    // КАЛЬКУЛЯТОР СДЕЛКИ В РЕАЛЬНОМ ВРЕМЕНИ
+    amountInput.addEventListener('input', calculateTradeCalculations);
 
-    function calculateFees() {
-      const amount = parseFloat(tradeAmountInput.value) || 0;
-      const fee = amount * 0.02; // 2% комиссия
-      document.getElementById('fee-amount').textContent = fee.toFixed(2) + "$";
+    function calculateTradeCalculations() {
+      const amount = parseFloat(amountInput.value) || 0;
+      const price = calculatePrice(projectInvestedGlobal);
 
       if (currentTradeMode === 'deposit') {
-        // При вводе с нас спишут Сумма + Комиссия
-        document.getElementById('total-amount').textContent = (amount + fee).toFixed(2) + "$";
+        // Покупка: вводим доллары, получаем доли
+        const sharesToGet = amount / price;
+        document.getElementById('total-amount').textContent = `+${sharesToGet.toFixed(4)} долей`;
       } else {
-        // При выводе мы на руки получим Сумма - Комиссия
-        document.getElementById('total-amount').textContent = Math.max(0, amount - fee).toFixed(2) + "$";
+        // Вывод: вводим доли, получаем доллары МИНУС 10% комиссия
+        const grossCash = amount * price;
+        const fee = grossCash * 0.10; // 10% комиссия, чтобы при вложенных 2$ забрать 1.80$
+        const netCash = Math.max(0, grossCash - fee);
+
+        document.getElementById('fee-amount').textContent = fee.toFixed(2) + "$";
+        document.getElementById('total-amount').textContent = `+${netCash.toFixed(2)}$ на баланс`;
       }
     }
 
-    // ИСПОЛНЕНИЕ СДЕЛКИ (ОБНОВЛЕНИЕ БАЗЫ ДАННЫХ)
+    // ИСПОЛНЕНИЕ ТРАНЗАКЦИИ НА БИРЖЕ (С КРИВОЙ ЦЕН)
     execBtn.addEventListener('click', async () => {
-      const amount = parseFloat(tradeAmountInput.value);
-      if (!amount || amount <= 0) {
-        alert("Введите корректную сумму операции.");
+      const inputVal = parseFloat(amountInput.value);
+      if (!inputVal || inputVal <= 0) {
+        alert("Укажите корректное количество");
         return;
       }
 
-      const fee = amount * 0.02;
       const userRef = doc(db, "users", auth.currentUser.uid);
-      const projectRef = doc(db, "projects", currentSelectedProjectId);
+      const projectRef = doc(db, "projects", currentProjectId);
+      const shareId = `shares_${auth.currentUser.uid}_${currentProjectId}`;
+      const shareRef = doc(db, "shares", shareId);
 
       try {
-        // Используем транзакцию Firestore для точности балансов на бирже
         await runTransaction(db, async (transaction) => {
           const userSnap = await transaction.get(userRef);
           const projectSnap = await transaction.get(projectRef);
+          const shareSnap = await transaction.get(shareRef);
 
           if (!userSnap.exists() || !projectSnap.exists()) return;
 
           const currentBalance = userSnap.data().balance;
           const currentProjectInvested = projectSnap.data().invested;
+          const currentSharesOwned = shareSnap.exists() ? shareSnap.data().shares : 0;
+
+          // Рассчитываем актуальную цену на момент щелчка кнопки
+          const exactPrice = calculatePrice(currentProjectInvested);
 
           if (currentTradeMode === 'deposit') {
-            const totalCost = amount + fee;
-            if (currentBalance < totalCost) {
-              throw "Недостаточно средств на балансе для покрытия сделки и комиссии!";
+            // КУПИТЬ ДОЛИ
+            if (currentBalance < inputVal) {
+              throw "Недостаточно денег на балансе!";
             }
-            // Списываем деньги с юзера, добавляем в проект
-            transaction.update(userRef, { balance: currentBalance - totalCost });
-            transaction.update(projectRef, { invested: currentProjectInvested + amount });
+            const sharesBought = inputVal / exactPrice;
+
+            // Обновляем кошелек юзера
+            transaction.update(userRef, { balance: currentBalance - inputVal });
+            // Накачиваем ликвидность пула (цена вырастет)
+            transaction.update(projectRef, { invested: currentProjectInvested + inputVal });
+            // Сохраняем доли
+            transaction.set(shareRef, {
+              userId: auth.currentUser.uid,
+              projectId: currentProjectId,
+              shares: currentSharesOwned + sharesBought
+            });
+
           } else {
-            // Режим Вывода
-            if (currentProjectInvested < amount) {
-              throw "В проекте нет такого количества ликвидности для вывода!";
+            // ПРОДАТЬ ДОЛИ (ВЫВЕСТИ)
+            if (currentSharesOwned < inputVal) {
+              throw "У вас нет такого количества долей для продажи!";
             }
-            const totalReceive = amount - fee;
-            // Снимаем из проекта, начисляем юзеру за вычетом комиссии
-            transaction.update(userRef, { balance: currentBalance + totalReceive });
-            transaction.update(projectRef, { invested: Math.max(0, currentProjectInvested - amount) });
+            const grossReturn = inputVal * exactPrice;
+            const fee = grossReturn * 0.10; // 10% комиссия
+            const netReturn = grossReturn - fee;
+
+            // Обновляем кошелек юзера
+            transaction.update(userRef, { balance: currentBalance + netReturn });
+            // Изымаем ликвидность из пула (цена упадет)
+            transaction.update(projectRef, { invested: Math.max(0, currentProjectInvested - grossReturn) });
+            // Списываем доли
+            transaction.set(shareRef, {
+              userId: auth.currentUser.uid,
+              projectId: currentProjectId,
+              shares: Math.max(0, currentSharesOwned - inputVal)
+            });
           }
         });
 
-        // После успешной транзакции обновляем UI лесенки локально (до обновления снапшота)
-        const updatedInvested = currentTradeMode === 'deposit' ? projectInvestedGlobal + amount : Math.max(0, projectInvestedGlobal - amount);
-        updateLadderUI(updatedInvested);
-        
-        tradingModal.classList.add('hidden');
-        alert("Ордер успешно исполнен на бирже!");
+        amountInput.value = '';
+        alert("Ордер успешно исполнен на блокчейн-пуле!");
 
       } catch (error) {
-        alert("Ошибка транзакции: " + error);
+        alert("Ошибка биржи: " + error);
       }
     });
   </script>
