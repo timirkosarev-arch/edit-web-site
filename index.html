@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>InvestX - Симулятор Биржи</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <title>InvestX - Торговый Терминал</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #0f172a;
-      --bg-panel: #1e293b;
+      --bg-dark: #0b0f19;
+      --bg-panel: #151f32;
+      --bg-input: #1e293b;
       --accent-blue: #3b82f6;
-      --accent-hover: #2563eb;
       --success: #10b981;
       --danger: #ef4444;
       --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #334155;
+      --text-muted: #64748b;
+      --border: #243249;
     }
 
     body {
@@ -29,265 +29,239 @@
 
     .hidden { display: none !important; }
 
-    /* Дизайн окна авторизации */
+    /* Окно авторизации */
     .auth-wrapper {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+      background: radial-gradient(circle at center, #151f32 0%, #0b0f19 100%);
     }
 
     .glass-panel {
-      background: rgba(30, 41, 59, 0.7);
+      background: rgba(21, 31, 50, 0.8);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
       border-radius: 16px;
       padding: 40px;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
       max-width: 400px;
       width: 90%;
     }
 
-    h1, h2, h3, h4 { margin: 0 0 15px 0; font-weight: 700; }
-    
-    .glass-panel h1 { font-size: 28px; background: -webkit-linear-gradient(#60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .glass-panel p { color: var(--text-muted); line-height: 1.5; margin-bottom: 25px; }
+    .glass-panel h1 { font-size: 32px; margin: 0 0 10px 0; background: linear-gradient(90deg, #3b82f6, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-    /* Кнопки */
-    .btn {
-      background: var(--accent-blue);
-      color: #fff;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .btn:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); }
-    .btn-google { background: #ea4335; display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .btn-google:hover { background: #d33828; box-shadow: 0 4px 12px rgba(234, 67, 53, 0.4); }
-    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-    .btn-outline:hover { background: rgba(255,255,255,0.05); color: #fff; transform: none; box-shadow: none; }
-    .btn-invest { background: var(--success); width: auto; padding: 8px 16px; font-size: 14px; }
-    .btn-invest:hover { background: #059669; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
-
-    /* Основной интерфейс */
-    .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    /* Основной контейнер */
+    .app-container { max-width: 1300px; margin: 0 auto; padding: 20px; }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px 0;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 30px;
-    }
-
-    .logo { font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #fff; }
-    .logo span { color: var(--accent-blue); }
-
-    .balance-card {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
-      padding: 10px 20px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-    .balance-amount { font-size: 22px; font-weight: 700; color: var(--success); }
-
-    /* Сетка: Форма слева, Рынок справа */
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 350px 1fr;
-      gap: 30px;
-    }
-
-    @media (max-width: 850px) {
-      .dashboard-grid { grid-template-columns: 1fr; }
-    }
-
-    .panel {
+      padding: 15px 25px;
       background: var(--bg-panel);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 25px;
+      margin-bottom: 25px;
     }
 
-    /* Инпуты */
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); }
-    input {
-      width: 100%;
-      background: var(--bg-dark);
-      border: 1px solid var(--border);
-      color: #fff;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 15px;
-      box-sizing: border-box;
-      transition: border 0.3s;
-    }
+    .logo { font-size: 24px; font-weight: 700; color: #fff; text-decoration: none; }
+    .logo span { color: var(--accent-blue); }
+
+    .user-info { display: flex; align-items: center; gap: 20px; }
+    .balance-box { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 8px 16px; border-radius: 8px; text-align: right; }
+    .balance-amount { font-size: 20px; font-weight: 700; color: var(--success); }
+
+    /* Сетка интерфейса */
+    .dashboard-grid { display: grid; grid-template-columns: 320px 1fr; gap: 25px; }
+
+    .panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    h3 { margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 15px; }
+
+    /* Инпуты и Кнопки */
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-muted); }
+    input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
     input:focus { outline: none; border-color: var(--accent-blue); }
 
-    /* Карточки проектов на рынке */
-    .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-    .project-card {
-      background: var(--bg-dark);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 20px;
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-    }
-    .project-card:hover { transform: translateY(-5px); border-color: var(--accent-blue); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-    .project-author { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; display: block; }
+    .btn { background: var(--accent-blue); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%; box-sizing: border-box; }
+    .btn:hover { background: #2563eb; transform: translateY(-1px); }
+    .btn-google { background: #ea4335; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; }
+    .btn-google:hover { background: #d33828; }
     
+    /* Список проектов */
+    .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+    .project-card { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 10px; padding: 15px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
+    .project-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
+
     /* Прогресс-бар */
-    .progress-container { margin: 15px 0; }
-    .progress-stats { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; color: var(--text-muted); }
-    .progress-stats span { color: #fff; font-weight: 500; }
-    .progress-bar { width: 100%; background: var(--border); height: 6px; border-radius: 3px; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--accent-blue); width: 0%; transition: width 0.5s ease-out; }
-    
-    .card-actions { margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .progress-bar { width: 100%; background: #1e293b; height: 6px; border-radius: 3px; margin: 10px 0; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent-blue); width: 0%; transition: width 0.3s; }
+
+    /* Модальное окно (Лесенка / Биржевой стакан) */
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(7, 10, 17, 0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 100; }
+    .modal-content { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 500px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); position: relative; }
+    .close-modal { position: absolute; top: 15px; right: 20px; font-size: 24px; color: var(--text-muted); cursor: pointer; }
+    .close-modal:hover { color: #fff; }
+
+    /* Стили торгового стакана (Лесенки) */
+    .trading-ladder { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin: 15px 0; font-family: monospace; font-size: 13px; }
+    .ladder-row { display: flex; justify-content: space-between; padding: 4px 8px; border-radius: 4px; margin-bottom: 2px; }
+    .ladder-row.deposit { background: rgba(16, 185, 129, 0.08); color: var(--success); }
+    .ladder-row.withdraw { background: rgba(239, 68, 68, 0.08); color: var(--danger); }
+
+    .trade-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+    .tab-btn { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: var(--text-muted); cursor: pointer; font-weight: 600; }
+    .tab-btn.active.tab-in { background: var(--success); color: #fff; border-color: var(--success); }
+    .tab-btn.active.tab-out { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+    .fee-text { font-size: 12px; color: var(--text-muted); margin-top: 5px; display: block; text-align: right; }
   </style>
 </head>
 <body>
 
   <div id="auth-section" class="auth-wrapper">
     <div class="glass-panel">
-      <h1>InvestX</h1>
-      <p>Твоя личная биржа инвестиций. Войди, получи стартовые 5.00$ и начни строить свою империю.</p>
+      <h1>InvestX Terminal</h1>
+      <p>Торговля активами и стартапами в реальном времени. Войди через Google, чтобы получить демо-баланс 5.00$.</p>
       <button id="login-btn" class="btn btn-google">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
-        Войти через Google
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
+        Авторизация через Google
       </button>
     </div>
   </div>
 
   <div id="app-section" class="app-container hidden">
-    
     <header>
-      <div class="logo">Invest<span>X</span></div>
-      <div class="balance-card">
-        <div>
-          <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Доступные средства</div>
-          <div class="balance-amount" id="user-balance">0.00$</div>
+      <a href="#" class="logo">Invest<span>X</span></a>
+      <div class="user-info">
+        <div class="balance-box">
+          <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Личный Баланс</div>
+          <div class="balance-amount" id="user-balance">Загрузка...</div>
         </div>
-        <button id="logout-btn" class="btn btn-outline" style="padding: 8px 12px; width: auto;">Выйти</button>
+        <button id="logout-btn" class="btn" style="background: #334155; width: auto; padding: 8px 15px;">Выйти</button>
       </div>
     </header>
 
     <div class="dashboard-grid">
-      
-      <aside>
-        <div class="panel">
-          <h3>Разместить проект (IPO)</h3>
-          <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
-            Привлеки капитал инвесторов для своего стартапа. Укажи название и необходимую сумму.
-          </p>
-          
-          <div class="form-group">
-            <label for="project-title">Название проекта</label>
-            <input type="text" id="project-title" placeholder="Например: Нейросеть для трейдинга" autocomplete="off">
-          </div>
-          
-          <div class="form-group">
-            <label for="project-goal">Цель сбора ($)</label>
-            <input type="number" id="project-goal" placeholder="100" min="1">
-          </div>
-          
-          <button id="create-project-btn" class="btn">Выпустить на рынок</button>
+      <aside class="panel">
+        <h3>Регистрация IPO</h3>
+        <div class="form-group">
+          <label>Название инвестиции</label>
+          <input type="text" id="project-title" placeholder="Crypto-Bot 2.0">
         </div>
+        <div class="form-group">
+          <label>Целевой объем сборов ($)</label>
+          <input type="number" id="project-goal" placeholder="50" min="1">
+        </div>
+        <button id="create-project-btn" class="btn">Выпустить на биржу</button>
       </aside>
 
-      <main>
-        <div class="panel">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3>Торговый терминал</h3>
-            <span style="font-size: 13px; color: var(--success);">● Live Updates</span>
-          </div>
-          
-          <div id="market-list" class="market-grid">
-            <p style="color: var(--text-muted);">Идет подключение к рынку...</p>
-          </div>
+      <main class="panel">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+          <h3>Активные активы на рынке</h3>
+          <span style="color: var(--success); font-size: 13px;">● Соединение активно</span>
+        </div>
+        <div id="market-list" class="market-grid">
+          <p style="color: var(--text-muted);">Загрузка стаканов цен...</p>
         </div>
       </main>
+    </div>
+  </div>
 
+  <div id="trading-modal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-modal" id="close-modal-btn">&times;</span>
+      <h2 id="modal-project-title" style="margin: 0 0 5px 0;">Название Проекта</h2>
+      <p id="modal-project-ceo" style="font-size: 12px; color: var(--text-muted); margin: 0 0 15px 0;">CEO: Имя</p>
+
+      <div class="trading-ladder">
+        <div style="text-align: center; color: var(--text-muted); font-size: 11px; margin-bottom: 5px; text-transform: uppercase;">Биржевой стакан (Очередь ордеров)</div>
+        <div class="ladder-row withdraw"><span>Вывод (Ask)</span><span id="ladder-ask">0.00$</span></div>
+        <div class="ladder-row" style="background: rgba(255,255,255,0.03); font-weight: bold; justify-content: center; color: #fff;" id="ladder-spread">Пул: 0.00$</div>
+        <div class="ladder-row deposit"><span>Ввод (Bid)</span><span id="ladder-bid">0.00$</span></div>
+      </div>
+
+      <div class="trade-tabs">
+        <button class="tab-btn tab-in active" id="tab-deposit">ВНЕСТИ</button>
+        <button class="tab-btn tab-out" id="tab-withdraw">ВЫВЕСТИ</button>
+      </div>
+
+      <div class="form-group">
+        <label id="input-action-label">Сумма инвестирования ($)</label>
+        <input type="number" id="trade-amount" placeholder="1.00" min="0.1" step="0.1">
+        <span class="fee-text">Комиссия биржи (2%): <span id="fee-amount">0.00$</span></span>
+        <span class="fee-text" style="color: #fff;">Итого к списанию/получению: <span id="total-amount">0.00$</span></span>
+      </div>
+
+      <button id="execute-trade-btn" class="btn" style="background: var(--success);">Подтвердить ордер</button>
     </div>
   </div>
 
   <script type="module">
-    // Импорт конфигурации
     import { firebaseConfig } from './config.js';
-
-    // Импорт модулей Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Инициализация
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // Элементы
+    // UI элементы
     const authSection = document.getElementById('auth-section');
     const appSection = document.getElementById('app-section');
-    const loginBtn = document.getElementById('login-btn');
-    const logoutBtn = document.getElementById('logout-btn');
     const balanceDisplay = document.getElementById('user-balance');
-    const createProjectBtn = document.getElementById('create-project-btn');
+    const tradingModal = document.getElementById('trading-modal');
 
-    // Авторизация
-    loginBtn.addEventListener('click', () => {
-      signInWithPopup(auth, provider).catch(error => console.error("Ошибка:", error));
-    });
+    let currentSelectedProjectId = null;
+    let currentTradeMode = 'deposit'; // 'deposit' или 'withdraw'
+    let userBalance = 0;
+    let projectInvestedGlobal = 0;
 
-    logoutBtn.addEventListener('click', () => signOut(auth));
+    // Вход / Выход
+    document.getElementById('login-btn').addEventListener('click', () => signInWithPopup(auth, provider));
+    document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
 
-    // Слушатель состояния
+    // СЛУШАТЕЛЬ АВТОРИЗАЦИИ И БАЛАНСА В РЕАЛЬНОМ ВРЕМЕНИ
+    let userUnsubscribe = null;
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         authSection.classList.add('hidden');
         appSection.classList.remove('hidden');
-        
+
+        // Подписываемся на изменения баланса юзера в реальном времени!
         const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        
-        if (!userSnap.exists()) {
-          await setDoc(userRef, { email: user.email, balance: 5.00 });
-          balanceDisplay.textContent = "5.00$";
-        } else {
-          balanceDisplay.textContent = userSnap.data().balance.toFixed(2) + "$";
-        }
+        userUnsubscribe = onSnapshot(userRef, async (snapshot) => {
+          if (!snapshot.exists()) {
+            // Если юзер зашел впервые - создаем профиль со стартовыми 5$
+            await setDoc(userRef, { email: user.email, balance: 5.00 });
+            userBalance = 5.00;
+          } else {
+            userBalance = snapshot.data().balance;
+          }
+          balanceDisplay.textContent = userBalance.toFixed(2) + "$";
+        });
+
         loadMarket();
       } else {
+        if (userUnsubscribe) userUnsubscribe();
         authSection.classList.remove('hidden');
         appSection.classList.add('hidden');
       }
     });
 
-    // Создание проекта
-    createProjectBtn.addEventListener('click', async () => {
-      const title = document.getElementById('project-title').value;
+    // СОЗДАНИЕ IPO ПРОЕКТА
+    document.getElementById('create-project-btn').addEventListener('click', async () => {
+      const title = document.getElementById('project-title').value.trim();
       const goal = parseFloat(document.getElementById('project-goal').value);
-      
+
       if (title && goal > 0) {
-        const creatorName = auth.currentUser.displayName || "Инвестор";
         await addDoc(collection(db, "projects"), {
           creatorId: auth.currentUser.uid,
-          creatorName: creatorName,
+          creatorName: auth.currentUser.displayName || "Трейдер",
           title: title,
           goal: goal,
           invested: 0
@@ -295,52 +269,174 @@
         document.getElementById('project-title').value = '';
         document.getElementById('project-goal').value = '';
       } else {
-        alert("Заполните форму корректно!");
+        alert("Укажите правильное название и сумму.");
       }
     });
 
-    // Отрисовка рынка с крутым дизайном и прогресс-баром
+    // ЗАГРУЗКА РЫНКА (КАРТОЧЕК ПРОЕКТОВ)
     function loadMarket() {
       onSnapshot(collection(db, "projects"), (snapshot) => {
         const marketList = document.getElementById('market-list');
         marketList.innerHTML = '';
-        
-        if(snapshot.empty) {
-          marketList.innerHTML = '<p style="color: var(--text-muted);">Пока нет активных проектов.</p>';
+
+        if (snapshot.empty) {
+          marketList.innerHTML = '<p style="color: var(--text-muted);">На бирже пока нет активов.</p>';
           return;
         }
 
-        snapshot.forEach((doc) => {
-          const project = doc.data();
-          // Расчет процентов для прогресс-бара
+        snapshot.forEach((projectDoc) => {
+          const project = projectDoc.data();
           const percent = Math.min((project.invested / project.goal) * 100, 100).toFixed(1);
-          
-          const div = document.createElement('div');
-          div.className = 'project-card';
-          div.innerHTML = `
-            <h4 style="margin-bottom: 5px; color: #fff;">${project.title}</h4>
-            <span class="project-author">CEO: ${project.creatorName}</span>
-            
-            <div class="progress-container">
-              <div class="progress-stats">
-                <div>Собрано: <span>${project.invested.toFixed(2)}$</span></div>
-                <div>Цель: <span>${project.goal}$</span></div>
+
+          const card = document.createElement('div');
+          card.className = 'project-card';
+          card.innerHTML = `
+            <div>
+              <h4 style="margin: 0 0 4px 0;">${project.title}</h4>
+              <span style="font-size: 11px; color: var(--text-muted);">CEO: ${project.creatorName}</span>
+              <div class="progress-bar"><div class="progress-fill" style="width: ${percent}%;"></div></div>
+              <div style="font-size: 12px; display:flex; justify-content:space-between;">
+                <span>Пул: <b>${project.invested.toFixed(2)}$</b></span>
+                <span>Цель: ${project.goal}$</span>
               </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${percent}%;"></div>
-              </div>
-              <div style="font-size: 11px; text-align: right; color: var(--text-muted); margin-top: 4px;">Завершено на ${percent}%</div>
             </div>
-            
-            <div class="card-actions">
-              <span style="font-size: 14px; color: var(--text-muted);">Цена доли: <b>1$</b></span>
-              <button class="btn btn-invest">Купить долю</button>
-            </div>
+            <button class="btn" style="margin-top: 15px; padding: 6px; font-size: 13px; background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.3)">Открыть стакан сделок</button>
           `;
-          marketList.appendChild(div);
+
+          // Клик по карточке открывает Модальное Окно ("Лесенку")
+          card.addEventListener('click', () => openTradingModal(projectDoc.id, project));
+          marketList.appendChild(card);
         });
       });
     }
+
+    // ОТКРЫТИЕ ЛЕСЕНКИ (МОДАЛКИ)
+    function openTradingModal(projectId, project) {
+      currentSelectedProjectId = projectId;
+      projectInvestedGlobal = project.invested;
+      
+      document.getElementById('modal-project-title').textContent = project.title;
+      document.getElementById('modal-project-ceo').textContent = `CEO: ${project.creatorName}`;
+      
+      // Обновляем "лесенку" (стакан цен) в зависимости от текущих инвестиций
+      updateLadderUI(project.invested);
+      
+      // Сброс формы
+      document.getElementById('trade-amount').value = '';
+      document.getElementById('fee-amount').textContent = '0.00$';
+      document.getElementById('total-amount').textContent = '0.00$';
+      setTradeMode('deposit');
+
+      tradingModal.classList.remove('hidden');
+    }
+
+    function updateLadderUI(invested) {
+      document.getElementById('ladder-spread').textContent = `Всего в пуле: ${invested.toFixed(2)}$`;
+      document.getElementById('ladder-ask').textContent = (invested + 1.25).toFixed(2) + "$";
+      document.getElementById('ladder-bid').textContent = Math.max(0, invested - 0.75).toFixed(2) + "$";
+    }
+
+    // Закрытие модалки
+    document.getElementById('close-modal-btn').addEventListener('click', () => tradingModal.classList.add('hidden'));
+
+    // Переключение вкладок Внести / Вывести в лесенке
+    const tabDeposit = document.getElementById('tab-deposit');
+    const tabWithdraw = document.getElementById('tab-withdraw');
+    const execBtn = document.getElementById('execute-trade-btn');
+
+    tabDeposit.addEventListener('click', () => setTradeMode('deposit'));
+    tabWithdraw.addEventListener('click', () => setTradeMode('withdraw'));
+
+    function setTradeMode(mode) {
+      currentTradeMode = mode;
+      if (mode === 'deposit') {
+        tabDeposit.classList.add('active');
+        tabWithdraw.classList.remove('active');
+        document.getElementById('input-action-label').textContent = "Сумма вклада в проект ($)";
+        execBtn.style.background = "var(--success)";
+        execBtn.textContent = "Исполнить ордер на Ввод";
+      } else {
+        tabWithdraw.classList.add('active');
+        tabDeposit.classList.remove('active');
+        document.getElementById('input-action-label').textContent = "Сумма вывода из проекта ($)";
+        execBtn.style.background = "var(--danger)";
+        execBtn.textContent = "Исполнить ордер на Вывод";
+      }
+      calculateFees();
+    }
+
+    // РАСЧЕТ КОМИССИИ В РЕАЛЬНОМ ВРЕМЕНИ (2%)
+    const tradeAmountInput = document.getElementById('trade-amount');
+    tradeAmountInput.addEventListener('input', calculateFees);
+
+    function calculateFees() {
+      const amount = parseFloat(tradeAmountInput.value) || 0;
+      const fee = amount * 0.02; // 2% комиссия
+      document.getElementById('fee-amount').textContent = fee.toFixed(2) + "$";
+
+      if (currentTradeMode === 'deposit') {
+        // При вводе с нас спишут Сумма + Комиссия
+        document.getElementById('total-amount').textContent = (amount + fee).toFixed(2) + "$";
+      } else {
+        // При выводе мы на руки получим Сумма - Комиссия
+        document.getElementById('total-amount').textContent = Math.max(0, amount - fee).toFixed(2) + "$";
+      }
+    }
+
+    // ИСПОЛНЕНИЕ СДЕЛКИ (ОБНОВЛЕНИЕ БАЗЫ ДАННЫХ)
+    execBtn.addEventListener('click', async () => {
+      const amount = parseFloat(tradeAmountInput.value);
+      if (!amount || amount <= 0) {
+        alert("Введите корректную сумму операции.");
+        return;
+      }
+
+      const fee = amount * 0.02;
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      const projectRef = doc(db, "projects", currentSelectedProjectId);
+
+      try {
+        // Используем транзакцию Firestore для точности балансов на бирже
+        await runTransaction(db, async (transaction) => {
+          const userSnap = await transaction.get(userRef);
+          const projectSnap = await transaction.get(projectRef);
+
+          if (!userSnap.exists() || !projectSnap.exists()) return;
+
+          const currentBalance = userSnap.data().balance;
+          const currentProjectInvested = projectSnap.data().invested;
+
+          if (currentTradeMode === 'deposit') {
+            const totalCost = amount + fee;
+            if (currentBalance < totalCost) {
+              throw "Недостаточно средств на балансе для покрытия сделки и комиссии!";
+            }
+            // Списываем деньги с юзера, добавляем в проект
+            transaction.update(userRef, { balance: currentBalance - totalCost });
+            transaction.update(projectRef, { invested: currentProjectInvested + amount });
+          } else {
+            // Режим Вывода
+            if (currentProjectInvested < amount) {
+              throw "В проекте нет такого количества ликвидности для вывода!";
+            }
+            const totalReceive = amount - fee;
+            // Снимаем из проекта, начисляем юзеру за вычетом комиссии
+            transaction.update(userRef, { balance: currentBalance + totalReceive });
+            transaction.update(projectRef, { invested: Math.max(0, currentProjectInvested - amount) });
+          }
+        });
+
+        // После успешной транзакции обновляем UI лесенки локально (до обновления снапшота)
+        const updatedInvested = currentTradeMode === 'deposit' ? projectInvestedGlobal + amount : Math.max(0, projectInvestedGlobal - amount);
+        updateLadderUI(updatedInvested);
+        
+        tradingModal.classList.add('hidden');
+        alert("Ордер успешно исполнен на бирже!");
+
+      } catch (error) {
+        alert("Ошибка транзакции: " + error);
+      }
+    });
   </script>
 </body>
 </html>
