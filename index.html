@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>InvestX Pro - Торговый Терминал</title>
+  <title>InvestX Pro - Торговый Терминал & Админ-Панель</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -75,7 +75,7 @@
     .balance-amount { font-size: 20px; font-weight: 700; color: var(--success); }
 
     /* Сетка интерфейса */
-    .dashboard-grid { display: grid; grid-template-columns: 320px 1fr; gap: 25px; }
+    .dashboard-grid { display: grid; grid-template-columns: 340px 1fr; gap: 25px; }
 
     .panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     h3 { margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 15px; }
@@ -92,7 +92,7 @@
     .btn-google:hover { background: #d33828; }
     
     /* Сетка рынка */
-    .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+    .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
     .project-card { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 10px; padding: 18px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
     .project-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
 
@@ -146,14 +146,28 @@
     </header>
 
     <div class="dashboard-grid">
-      <aside class="panel">
-        <h3>Регистрация Нового IPO</h3>
-        <div class="form-group">
-          <label>Название актива / Компании</label>
-          <input type="text" id="project-title" placeholder="Например: SpaceX Clone">
+      
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <div class="panel">
+          <h3>Регистрация Нового IPO</h3>
+          <div class="form-group">
+            <label>Название актива / Компании</label>
+            <input type="text" id="project-title" placeholder="Например: SpaceX Clone">
+          </div>
+          <button id="create-project-btn" class="btn">Выпустить на Торги</button>
         </div>
-        <button id="create-project-btn" class="btn">Выпустить на Торги</button>
-      </aside>
+
+        <div class="panel">
+          <h3 style="color: #60a5fa;">👨‍💻 Управление балансами</h3>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top:-10px; margin-bottom:15px;">Список всех игроков в Firestore. Ты можешь начислить баксы любому.</p>
+          
+          <div id="admin-users-list" style="max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;">
+            <p style="color: var(--text-muted); font-size: 13px;">Синхронизация базы пользователей...</p>
+          </div>
+        </div>
+
+      </div>
 
       <main class="panel">
         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
@@ -216,7 +230,7 @@
     import { firebaseConfig } from './config.js';
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -235,7 +249,6 @@
     let myCurrentShares = 0;
     let projectInvestedGlobal = 0;
 
-    // Переменные для графика Chart.js
     let chartInstance = null;
     let chartTimer = null;
 
@@ -243,7 +256,7 @@
     document.getElementById('login-btn').addEventListener('click', () => signInWithPopup(auth, provider));
     document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
 
-    // СЛУШАТЕЛЬ БАЛАНСА В РЕАЛЬНОМ ВРЕМЕНИ
+    // СЛУШАТЕЛЬ СОСТОЯНИЯ ПОЛЬЗОВАТЕЛЯ
     let userUnsubscribe = null;
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -251,18 +264,36 @@
         appSection.classList.remove('hidden');
 
         const userRef = doc(db, "users", user.uid);
-        userUnsubscribe = onSnapshot(userRef, async (snapshot) => {
-          if (!snapshot.exists()) {
-            await setDoc(userRef, { email: user.email, balance: 5.00 });
-            userBalance = 5.00;
-          } else {
+        
+        // 1. Проверяем наличие аккаунта, сохраняем Имя и Email для админки
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          await setDoc(userRef, {
+            uid: user.uid,
+            name: user.displayName || "Новый Трейдер",
+            email: user.email || "Нет почты",
+            balance: 5.00
+          });
+        } else {
+          // Если юзер уже был, просто освежаем его имя/почту (на случай изменений в Google)
+          await updateDoc(userRef, {
+            name: user.displayName || "Новый Трейдер",
+            email: user.email || "Нет почты"
+          });
+        }
+
+        // 2. Включаем живую подписку на баланс ТЕКУЩЕГО залогиненного юзера
+        userUnsubscribe = onSnapshot(userRef, (snapshot) => {
+          if (snapshot.exists()) {
             userBalance = snapshot.data().balance;
+            balanceDisplay.textContent = userBalance.toFixed(2) + "$";
+            if (currentProjectId) updateModalStatsLive();
           }
-          balanceDisplay.textContent = userBalance.toFixed(2) + "$";
-          if (currentProjectId) updateModalStatsLive();
         });
 
+        // Загружаем основные модули
         loadMarket();
+        loadAdminPanel(); 
       } else {
         if (userUnsubscribe) userUnsubscribe();
         authSection.classList.remove('hidden');
@@ -270,8 +301,86 @@
       }
     });
 
-    // МАТЕМАТИКА ФОРМУЛЫ ЦЕНЫ (Кривая ликвидности / Пул)
-    // Стартовая цена = 1.00$. Каждый вложенный доллар поднимает цену на 0.05$.
+    // ФУНКЦИЯ ДЛЯ ЖИВОЙ АДМИН-ПАНЕЛИ (Управление всеми пользователями)
+    function loadAdminPanel() {
+      onSnapshot(collection(db, "users"), (snapshot) => {
+        const adminList = document.getElementById('admin-users-list');
+        adminList.innerHTML = '';
+
+        if (snapshot.empty) {
+          adminList.innerHTML = '<p style="color: var(--text-muted); font-size: 13px;">Пользователей не найдено.</p>';
+          return;
+        }
+
+        snapshot.forEach((userDoc) => {
+          const uData = userDoc.data();
+          
+          const row = document.createElement('div');
+          row.style.background = 'var(--bg-dark)';
+          row.style.padding = '10px';
+          row.style.borderRadius = '8px';
+          row.style.border = '1px solid var(--border)';
+          row.style.fontSize = '13px';
+          row.style.display = 'flex';
+          row.style.flexDirection = 'column';
+          row.style.gap = '4px';
+
+          row.innerHTML = `
+            <div style="font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${uData.name}">
+              ${uData.name} ${userDoc.id === auth.currentUser.uid ? '<span style="color:var(--accent-blue); font-size:10px;">(Ты)</span>' : ''}
+            </div>
+            <div style="color: var(--text-muted); font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              ${uData.email}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+              <span>Кошелек: <b style="color:var(--success)">${(uData.balance || 0).toFixed(2)}$</b></span>
+              <div style="display:flex; gap:4px;">
+                <input type="number" id="topup-amt-${userDoc.id}" placeholder="+ $" min="0.1" step="1" 
+                  style="width:55px; height:24px; padding:2px 6px; font-size:12px; background:var(--bg-input); border:1px solid var(--border); color:#fff; border-radius:4px;">
+                <button class="btn" data-uid="${userDoc.id}" 
+                  style="width:auto; height:24px; padding: 0 8px; font-size:12px; background:var(--success); line-height:1;">Пополнить</button>
+              </div>
+            </div>
+          `;
+
+          // Вешаем событие клика на кнопку «Пополнить»
+          const btn = row.querySelector('button');
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation(); // Исключаем баги кликов
+            const targetUid = e.target.getAttribute('data-uid');
+            const inputField = document.getElementById(`topup-amt-${targetUid}`);
+            const amountToGive = parseFloat(inputField.value);
+
+            if (!amountToGive || amountToGive <= 0) {
+              alert("Введите корректную сумму для начисления!");
+              return;
+            }
+
+            const targetUserRef = doc(db, "users", targetUid);
+
+            try {
+              // Запускаем безопасную транзакцию для изменения баланса на сервере
+              await runTransaction(db, async (transaction) => {
+                const targetSnap = await transaction.get(targetUserRef);
+                if (!targetSnap.exists()) throw "Пользователь не найден в системе!";
+                
+                const oldBalance = targetSnap.data().balance || 0;
+                transaction.update(targetUserRef, { balance: oldBalance + amountToGive });
+              });
+
+              inputField.value = '';
+              alert(`Баланс пользователя успешно увеличен на +${amountToGive.toFixed(2)}$ !`);
+            } catch (err) {
+              alert("Ошибка администрирования: " + err);
+            }
+          });
+
+          adminList.appendChild(row);
+        });
+      });
+    }
+
+    // МАТЕМАТИКА ЦЕНООБРАЗОВАНИЯ (Bonding Curve)
     function calculatePrice(investedPool) {
       return 1.00 + (investedPool * 0.05);
     }
@@ -284,7 +393,7 @@
           creatorId: auth.currentUser.uid,
           creatorName: auth.currentUser.displayName || "Инвестор",
           title: title,
-          invested: 0 // Изначально пул пустой, цена 1$
+          invested: 0 
         });
         document.getElementById('project-title').value = '';
       } else {
@@ -292,7 +401,7 @@
       }
     });
 
-    // СЛУШАТЕЛЬ ВСЕГО РЫНКА КАРТОЧЕК
+    // СЛУШАТЕЛЬ КАРТОЧЕК НА РЫНКЕ
     function loadMarket() {
       onSnapshot(collection(db, "projects"), (snapshot) => {
         const marketList = document.getElementById('market-list');
@@ -333,7 +442,7 @@
       });
     }
 
-    // ОТКРЫТИЕ СТАКАНА И ЗАПУСК ЖИВОГО ГРАФИКА
+    // ТРЕЙДИНГ: ОТКРЫТИЕ СТАКАНА
     let currentProjectListener = null;
     let currentSharesListener = null;
 
@@ -343,15 +452,12 @@
       document.getElementById('modal-project-title').textContent = project.title;
       document.getElementById('modal-project-ceo').textContent = `CEO: ${project.creatorName}`;
 
-      // Сброс инпутов
       document.getElementById('trade-amount').value = '';
       setTradeMode('deposit');
 
-      // Инициализируем график Chart.js бутафорскими точками, отталкиваясь от текущей цены
       const startingPrice = calculatePrice(project.invested);
       initTradingChart(startingPrice);
 
-      // Включаем живые подписки на изменения этого проекта и долей юзера
       if (currentProjectListener) currentProjectListener();
       if (currentSharesListener) currentSharesListener();
 
@@ -366,18 +472,13 @@
       const shareId = `shares_${auth.currentUser.uid}_${projectId}`;
       const shareRef = doc(db, "shares", shareId);
       currentSharesListener = onSnapshot(shareRef, (snap) => {
-        if(snap.exists()) {
-          myCurrentShares = snap.data().shares;
-        } else {
-          myCurrentShares = 0;
-        }
+        myCurrentShares = snap.exists() ? snap.data().shares : 0;
         updateModalStatsLive();
       });
 
       tradingModal.classList.remove('hidden');
     }
 
-    // ОБНОВЛЕНИЕ СТАТИСТИКИ И ЦЕН ВНУТРИ МОДАЛКИ В РЕАЛЬНОМ ВРЕМЕНИ
     function updateModalStatsLive() {
       const price = calculatePrice(projectInvestedGlobal);
       const myValue = myCurrentShares * price;
@@ -387,9 +488,7 @@
       document.getElementById('ladder-my-shares').textContent = myCurrentShares.toFixed(4);
       document.getElementById('ladder-my-value').textContent = myValue.toFixed(2) + "$";
 
-      // Пушим реальную текущую цену в график
       if (chartInstance) {
-        // Добавляем к графику небольшой живой шум, чтобы линия дышала как на настоящей бирже
         const noise = (Math.random() - 0.5) * 0.02;
         const animatedPrice = Math.max(0.1, price + noise);
         
@@ -406,14 +505,11 @@
       calculateTradeCalculations();
     }
 
-    // ИНИЦИАЛИЗАЦИЯ CHART.JS
     function initTradingChart(startPrice) {
       if (chartInstance) chartInstance.destroy();
       if (chartTimer) clearInterval(chartTimer);
 
       const ctx = document.getElementById('tradingChart').getContext('2d');
-      
-      // Генерируем 10 стартовых точек истории
       const dataPoints = [];
       const labels = [];
       for(let i=0; i<12; i++) {
@@ -448,13 +544,11 @@
         }
       });
 
-      // Запускаем таймер, который каждые 2 секунды дергает график, симулируя микро-торги
       chartTimer = setInterval(() => {
         updateModalStatsLive();
       }, 2000);
     }
 
-    // ЗАКРЫТИЕ МОДАЛКИ
     document.getElementById('close-modal-btn').addEventListener('click', () => {
       tradingModal.classList.add('hidden');
       if (chartTimer) clearInterval(chartTimer);
@@ -463,7 +557,6 @@
       currentProjectId = null;
     });
 
-    // ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК (КУПИТЬ / ПРОДАТЬ)
     const tabDeposit = document.getElementById('tab-deposit');
     const tabWithdraw = document.getElementById('tab-withdraw');
     const execBtn = document.getElementById('execute-trade-btn');
@@ -493,7 +586,6 @@
       calculateTradeCalculations();
     }
 
-    // КАЛЬКУЛЯТОР СДЕЛКИ В РЕАЛЬНОМ ВРЕМЕНИ
     amountInput.addEventListener('input', calculateTradeCalculations);
 
     function calculateTradeCalculations() {
@@ -501,13 +593,11 @@
       const price = calculatePrice(projectInvestedGlobal);
 
       if (currentTradeMode === 'deposit') {
-        // Покупка: вводим доллары, получаем доли
         const sharesToGet = amount / price;
         document.getElementById('total-amount').textContent = `+${sharesToGet.toFixed(4)} долей`;
       } else {
-        // Вывод: вводим доли, получаем доллары МИНУС 10% комиссия
         const grossCash = amount * price;
-        const fee = grossCash * 0.10; // 10% комиссия, чтобы при вложенных 2$ забрать 1.80$
+        const fee = grossCash * 0.10; 
         const netCash = Math.max(0, grossCash - fee);
 
         document.getElementById('fee-amount').textContent = fee.toFixed(2) + "$";
@@ -515,7 +605,6 @@
       }
     }
 
-    // ИСПОЛНЕНИЕ ТРАНЗАКЦИИ НА БИРЖЕ (С КРИВОЙ ЦЕН)
     execBtn.addEventListener('click', async () => {
       const inputVal = parseFloat(amountInput.value);
       if (!inputVal || inputVal <= 0) {
@@ -540,41 +629,27 @@
           const currentProjectInvested = projectSnap.data().invested;
           const currentSharesOwned = shareSnap.exists() ? shareSnap.data().shares : 0;
 
-          // Рассчитываем актуальную цену на момент щелчка кнопки
           const exactPrice = calculatePrice(currentProjectInvested);
 
           if (currentTradeMode === 'deposit') {
-            // КУПИТЬ ДОЛИ
-            if (currentBalance < inputVal) {
-              throw "Недостаточно денег на балансе!";
-            }
+            if (currentBalance < inputVal) throw "Недостаточно денег на балансе!";
             const sharesBought = inputVal / exactPrice;
 
-            // Обновляем кошелек юзера
             transaction.update(userRef, { balance: currentBalance - inputVal });
-            // Накачиваем ликвидность пула (цена вырастет)
             transaction.update(projectRef, { invested: currentProjectInvested + inputVal });
-            // Сохраняем доли
             transaction.set(shareRef, {
               userId: auth.currentUser.uid,
               projectId: currentProjectId,
               shares: currentSharesOwned + sharesBought
             });
-
           } else {
-            // ПРОДАТЬ ДОЛИ (ВЫВЕСТИ)
-            if (currentSharesOwned < inputVal) {
-              throw "У вас нет такого количества долей для продажи!";
-            }
+            if (currentSharesOwned < inputVal) throw "У вас нет такого количества долей!";
             const grossReturn = inputVal * exactPrice;
-            const fee = grossReturn * 0.10; // 10% комиссия
+            const fee = grossReturn * 0.10; 
             const netReturn = grossReturn - fee;
 
-            // Обновляем кошелек юзера
             transaction.update(userRef, { balance: currentBalance + netReturn });
-            // Изымаем ликвидность из пула (цена упадет)
             transaction.update(projectRef, { invested: Math.max(0, currentProjectInvested - grossReturn) });
-            // Списываем доли
             transaction.set(shareRef, {
               userId: auth.currentUser.uid,
               projectId: currentProjectId,
@@ -585,7 +660,6 @@
 
         amountInput.value = '';
         alert("Ордер успешно исполнен на блокчейн-пуле!");
-
       } catch (error) {
         alert("Ошибка биржи: " + error);
       }
