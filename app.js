@@ -1,21 +1,18 @@
-// app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 import { firebaseConfig, IMGBBB_API_KEY } from "./config.js";
 
-// Инициализация Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+const googleProvider = new GoogleAuthProvider();
 
-// Переменная для хранения текущего пользователя
 let currentUser = null;
 
-/* --- НАВИГАЦИЯ МЕЖДУ ЭКРАНАМИ --- */
 const screens = ['main', 'profile', 'upload', 'auth'];
 function showScreen(screenName) {
     screens.forEach(s => {
@@ -33,12 +30,10 @@ document.getElementById('nav-upload').addEventListener('click', () => showScreen
 document.getElementById('nav-profile').addEventListener('click', () => showScreen('profile'));
 document.getElementById('nav-auth').addEventListener('click', () => showScreen('auth'));
 
-/* --- ИНДИКАТОР ЗАГРУЗКИ --- */
 function toggleLoading(show) {
     document.getElementById('loading-status').style.display = show ? 'block' : 'none';
 }
 
-/* --- СЛУШАТЕЛЬ СОСТОЯНИЯ ПОЛЬЗОВАТЕЛЯ (AUTH) --- */
 onAuthStateChanged(auth, (user) => {
     currentUser = user;
     if (user) {
@@ -60,7 +55,6 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-/* --- РЕГИСТРАЦИЯ И ВХОД --- */
 document.getElementById('register-btn').addEventListener('click', async () => {
     const email = document.getElementById('reg-email').value;
     const password = document.getElementById('reg-password').value;
@@ -84,11 +78,21 @@ document.getElementById('login-btn').addEventListener('click', async () => {
     } finally { toggleLoading(false); }
 });
 
+document.getElementById('google-login-btn').addEventListener('click', async () => {
+    try {
+        toggleLoading(true);
+        await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+        alert('Ошибка входа через Google: ' + error.message);
+    } finally { 
+        toggleLoading(false); 
+    }
+});
+
 document.getElementById('nav-logout').addEventListener('click', () => {
     signOut(auth);
 });
 
-/* --- ЗАГРУЗКА КАРТИНКИ НА IMGBBB --- */
 async function uploadImageToImgBB(file) {
     const formData = new FormData();
     formData.append("image", file);
@@ -99,13 +103,12 @@ async function uploadImageToImgBB(file) {
     });
     const data = await response.json();
     if (data.success) {
-        return data.data.url; // Возвращает прямую ссылку на картинку
+        return data.data.url;
     } else {
         throw new Error("Не удалось загрузить картинку на ImgBB");
     }
 }
 
-/* --- ПУБЛИКАЦИЯ МОДА (АРХИВ + КАРТИНКА + ДАННЫЕ) --- */
 document.getElementById('submit-mod-btn').addEventListener('click', async () => {
     if (!currentUser) return alert("Войдите в аккаунт, чтобы добавить мод!");
     
@@ -121,28 +124,24 @@ document.getElementById('submit-mod-btn').addEventListener('click', async () => 
     try {
         toggleLoading(true);
 
-        // 1. Загружаем картинку на ImgBB
         const imageUrl = await uploadImageToImgBB(imgFile);
 
-        // 2. Загружаем архив мода в Firebase Storage
         const archiveRef = ref(storage, `mods/${Date.now()}_${archiveFile.name}`);
         const uploadResult = await uploadBytes(archiveRef, archiveFile);
         const fileUrl = await getDownloadURL(uploadResult.ref);
 
-        // 3. Сохраняем информацию в базу данных Firestore
         await addDoc(collection(db, "mods"), {
             title: title,
             description: desc,
             imageUrl: imageUrl,
             fileUrl: fileUrl,
-            storagePath: archiveRef.fullPath, // сохраняем путь для последующего удаления
+            storagePath: archiveRef.fullPath,
             userId: currentUser.uid,
             userEmail: currentUser.email,
             createdAt: Date.now()
         });
 
         alert("Мод успешно опубликован!");
-        // Сброс формы
         document.getElementById('mod-title').value = '';
         document.getElementById('mod-desc').value = '';
         document.getElementById('mod-image-file').value = '';
@@ -157,7 +156,6 @@ document.getElementById('submit-mod-btn').addEventListener('click', async () => 
     }
 });
 
-/* --- ОТОБРАЖЕНИЕ МОДОВ --- */
 function createModCard(modData, id, isProfile = false) {
     return `
         <div class="mod-card" id="mod-${id}">
@@ -176,7 +174,6 @@ function createModCard(modData, id, isProfile = false) {
     `;
 }
 
-// Загрузка вообще всех модов на главную
 async function loadAllMods() {
     const container = document.getElementById('all-mods-container');
     container.innerHTML = '';
@@ -188,7 +185,6 @@ async function loadAllMods() {
     } catch (e) { console.error("Ошибка получения модов: ", e); }
 }
 
-// Загрузка модов конкретного залогиненного пользователя в его профиль
 async function loadMyMods() {
     const container = document.getElementById('my-mods-container');
     container.innerHTML = '';
@@ -201,7 +197,6 @@ async function loadMyMods() {
             container.innerHTML += createModCard(doc.data(), doc.id, true);
         });
         
-        // Навешиваем события на кнопки удаления
         document.querySelectorAll('.btn-delete').forEach(button => {
             button.addEventListener('click', (e) => {
                 const modId = e.target.getAttribute('data-id');
@@ -212,24 +207,21 @@ async function loadMyMods() {
     } catch (e) { console.error("Ошибка получения профильных модов: ", e); }
 }
 
-/* --- УДАЛЕНИЕ МОДА --- */
 async function deleteMod(modId, storagePath) {
     if(!confirm("Вы уверены, что хотите удалить этот мод?")) return;
     
     try {
         toggleLoading(true);
         
-        // 1. Удаляем сам файл (архив) из Firebase Storage
         if (storagePath) {
             const fileRef = ref(storage, storagePath);
             await deleteObject(fileRef).catch(err => console.log("Файл в хранилище не найден или уже удален"));
         }
         
-        // 2. Удаляем документ из базы данных Firestore
         await deleteDoc(doc(db, "mods", modId));
         
         alert("Мод удален!");
-        loadMyMods(); // обновляем профиль
+        loadMyMods();
     } catch (error) {
         alert("Ошибка удаления: " + error.message);
     } finally {
@@ -237,5 +229,4 @@ async function deleteMod(modId, storagePath) {
     }
 }
 
-// Изначальная загрузка главной страницы при открытии сайта
 loadAllMods();
