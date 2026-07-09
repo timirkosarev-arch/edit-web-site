@@ -17,7 +17,6 @@
         .screen { display: none; }
         .screen.active { display: block; }
 
-        /* Формы */
         .form-box { background: #222; padding: 30px; border-radius: 8px; max-width: 500px; margin: 50px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .form-box h2 { margin-bottom: 20px; color: #00ff66; }
         input, textarea { width: 100%; padding: 10px; margin-bottom: 15px; background: #333; border: 1px solid #555; color: #fff; border-radius: 4px; }
@@ -25,7 +24,6 @@
         .form-box button { width: 100%; padding: 12px; background: #00ff66; border: none; color: #000; font-weight: bold; cursor: pointer; border-radius: 4px; }
         .form-box p { margin-top: 15px; text-align: center; color: #aaa; cursor: pointer; }
 
-        /* Сетка модов */
         .mods-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
         .mod-card { background: #222; border-radius: 8px; overflow: hidden; border: 1px solid #333; transition: 0.3s; display: flex; flex-direction: column; }
         .mod-card:hover { transform: translateY(-5px); border-color: #00ff66; }
@@ -89,6 +87,12 @@
                 <input type="email" id="login-email" placeholder="Email" required>
                 <input type="password" id="login-password" placeholder="Пароль" required>
                 <button id="login-btn">Войти</button>
+                
+                <button id="google-login-btn" style="background: #fff; color: #000; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="G" style="width: 18px;">
+                    Войти через Google
+                </button>
+                
                 <p onclick="toggleAuthForms(false)">Нет аккаунта? Зарегистрироваться</p>
             </div>
             <div class="form-box" id="auth-register-form" style="display:none;">
@@ -103,7 +107,6 @@
 
     <script type="module" src="app.js"></script>
     <script>
-        // Простая функция переключения между формами входа/регистрации внутри экрана авторизации
         function toggleAuthForms(showLogin) {
             document.getElementById('auth-login-form').style.display = showLogin ? 'block' : 'none';
             document.getElementById('auth-register-form').style.display = showLogin ? 'none' : 'block';
