@@ -1,14 +1,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 import { firebaseConfig, IMGBBB_API_KEY } from "./config.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
 let currentUser = null;
@@ -93,6 +91,7 @@ document.getElementById('nav-logout').addEventListener('click', () => {
     signOut(auth);
 });
 
+// Загрузка только картинки через ImgBB
 async function uploadImageToImgBB(file) {
     const formData = new FormData();
     formData.append("image", file);
@@ -115,27 +114,24 @@ document.getElementById('submit-mod-btn').addEventListener('click', async () => 
     const title = document.getElementById('mod-title').value;
     const desc = document.getElementById('mod-desc').value;
     const imgFile = document.getElementById('mod-image-file').files[0];
-    const archiveFile = document.getElementById('mod-archive-file').files[0];
+    const fileUrl = document.getElementById('mod-file-url').value;
     
-    if (!title || !desc || !imgFile || !archiveFile) {
-        return alert("Пожалуйста, заполните все поля и выберите файлы!");
+    if (!title || !desc || !imgFile || !fileUrl) {
+        return alert("Пожалуйста, заполните все поля!");
     }
 
     try {
         toggleLoading(true);
 
+        // 1. Отправляем картинку на ImgBB
         const imageUrl = await uploadImageToImgBB(imgFile);
 
-        const archiveRef = ref(storage, `mods/${Date.now()}_${archiveFile.name}`);
-        const uploadResult = await uploadBytes(archiveRef, archiveFile);
-        const fileUrl = await getDownloadURL(uploadResult.ref);
-
+        // 2. Сохраняем пост в Firestore (без Firebase Storage)
         await addDoc(collection(db, "mods"), {
             title: title,
             description: desc,
             imageUrl: imageUrl,
             fileUrl: fileUrl,
-            storagePath: archiveRef.fullPath,
             userId: currentUser.uid,
             userEmail: currentUser.email,
             createdAt: Date.now()
@@ -145,7 +141,7 @@ document.getElementById('submit-mod-btn').addEventListener('click', async () => 
         document.getElementById('mod-title').value = '';
         document.getElementById('mod-desc').value = '';
         document.getElementById('mod-image-file').value = '';
-        document.getElementById('mod-archive-file').value = '';
+        document.getElementById('mod-file-url').value = '';
         
         showScreen('main');
     } catch (error) {
@@ -166,8 +162,8 @@ function createModCard(modData, id, isProfile = false) {
                     <p class="mod-desc">${modData.description}</p>
                 </div>
                 <div class="mod-actions">
-                    <a href="${modData.fileUrl}" class="btn-download" target="_blank" download>Скачать</a>
-                    ${isProfile ? `<button class="btn-delete" data-id="${id}" data-path="${modData.storagePath}">Удалить</button>` : ''}
+                    <a href="${modData.fileUrl}" class="btn-download" target="_blank">Скачать</a>
+                    ${isProfile ? `<button class="btn-delete" data-id="${id}">Удалить</button>` : ''}
                 </div>
             </div>
         </div>
@@ -200,26 +196,18 @@ async function loadMyMods() {
         document.querySelectorAll('.btn-delete').forEach(button => {
             button.addEventListener('click', (e) => {
                 const modId = e.target.getAttribute('data-id');
-                const storagePath = e.target.getAttribute('data-path');
-                deleteMod(modId, storagePath);
+                deleteMod(modId);
             });
         });
     } catch (e) { console.error("Ошибка получения профильных модов: ", e); }
 }
 
-async function deleteMod(modId, storagePath) {
+async function deleteMod(modId) {
     if(!confirm("Вы уверены, что хотите удалить этот мод?")) return;
     
     try {
         toggleLoading(true);
-        
-        if (storagePath) {
-            const fileRef = ref(storage, storagePath);
-            await deleteObject(fileRef).catch(err => console.log("Файл в хранилище не найден или уже удален"));
-        }
-        
         await deleteDoc(doc(db, "mods", modId));
-        
         alert("Мод удален!");
         loadMyMods();
     } catch (error) {
