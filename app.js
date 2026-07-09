@@ -13,6 +13,42 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+const IMGBB_API_KEY = "91baa56297963d72b88d39e4aee75835";
+
+const showUploadBtn = document.getElementById('show-upload-btn');
+const uploadSection = document.getElementById('upload-section');
+const cancelBtn = document.getElementById('cancel-btn');
+
+// Логика отображения кнопки и формы в зависимости от авторизации
+onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    if (user) {
+        authBtn.textContent = "Выйти (" + user.displayName + ")";
+        showUploadBtn.style.display = "block"; // Показываем кнопку загрузки
+    } else {
+        authBtn.textContent = "Войти через Google";
+        showUploadBtn.style.display = "none";
+        uploadSection.style.display = "none"; // Прячем форму, если вышли
+    }
+});
+
+// Открыть форму
+showUploadBtn.addEventListener('click', () => {
+    uploadSection.style.display = "block";
+    showUploadBtn.style.display = "none"; // Прячем кнопку, пока открыта форма
+});
+
+// Закрыть форму
+cancelBtn.addEventListener('click', () => {
+    uploadSection.style.display = "none";
+    showUploadBtn.style.display = "block";
+});
+
+// После успешной загрузки в блоке uploadForm.addEventListener('submit', ...)
+// Добавь в конце:
+uploadSection.style.display = "none";
+showUploadBtn.style.display = "block";
+
 // Элементы на странице
 const authBtn = document.getElementById('auth-btn');
 const uploadSection = document.getElementById('upload-section');
