@@ -36,6 +36,36 @@
         .btn-delete { background: #ff3333; color: #fff; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; }
         
         .loading { color: #00ff66; text-align: center; font-size: 18px; margin: 20px 0; display: none; }
+
+        /* === СТИЛИ ДЛЯ ПЛАВНЫХ УВЕДОМЛЕНИЙ === */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .toast {
+            background: #222;
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-left: 5px solid #00ff66; /* Зеленая полоса по умолчанию (успех) */
+            font-weight: 500;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast.error {
+            border-left-color: #ff3333; /* Красная полоса для ошибок */
+        }
     </style>
 </head>
 <body>
@@ -105,6 +135,8 @@
         </div>
     </div>
 
+    <div id="toast-container"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -119,6 +151,25 @@
         const googleProvider = new GoogleAuthProvider();
 
         let currentUser = null;
+
+        // === ФУНКЦИЯ ПЛАВНЫХ УВЕДОМЛЕНИЙ ===
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+
+            // Небольшая задержка перед запуском анимации появления
+            setTimeout(() => toast.classList.add('show'), 10);
+
+            // Удаляем уведомление через 3 секунды
+            setTimeout(() => {
+                toast.classList.remove('show');
+                // Ждем окончания анимации скрытия перед полным удалением
+                setTimeout(() => toast.remove(), 400); 
+            }, 3000);
+        };
 
         // Глобальная функция для переключения форм авторизации (нужна для onclick в HTML)
         window.toggleAuthForms = function(showLogin) {
@@ -174,9 +225,9 @@
             try {
                 toggleLoading(true);
                 await createUserWithEmailAndPassword(auth, email, password);
-                alert('Аккаунт успешно создан!');
+                showToast('Аккаунт успешно создан!', 'success');
             } catch (error) {
-                alert('Ошибка регистрации: ' + error.message);
+                showToast('Ошибка регистрации: ' + error.message, 'error');
             } finally { toggleLoading(false); }
         });
 
@@ -186,8 +237,9 @@
             try {
                 toggleLoading(true);
                 await signInWithEmailAndPassword(auth, email, password);
+                showToast('Вы успешно вошли!', 'success');
             } catch (error) {
-                alert('Ошибка входа: ' + error.message);
+                showToast('Ошибка входа: ' + error.message, 'error');
             } finally { toggleLoading(false); }
         });
 
@@ -195,13 +247,15 @@
             try {
                 toggleLoading(true);
                 await signInWithPopup(auth, googleProvider);
+                showToast('Вы успешно вошли через Google!', 'success');
             } catch (error) {
-                alert('Ошибка входа через Google: ' + error.message);
+                showToast('Ошибка входа через Google: ' + error.message, 'error');
             } finally { toggleLoading(false); }
         });
 
         document.getElementById('nav-logout').addEventListener('click', () => {
             signOut(auth);
+            showToast('Вы вышли из аккаунта', 'success');
         });
 
         async function uploadImageToImgBB(file) {
@@ -221,7 +275,9 @@
         }
 
         document.getElementById('submit-mod-btn').addEventListener('click', async () => {
-            if (!currentUser) return alert("Войдите в аккаунт, чтобы добавить мод!");
+            if (!currentUser) {
+                return showToast("Войдите в аккаунт, чтобы добавить мод!", 'error');
+            }
             
             const title = document.getElementById('mod-title').value;
             const desc = document.getElementById('mod-desc').value;
@@ -229,7 +285,7 @@
             const fileUrl = document.getElementById('mod-file-url').value;
             
             if (!title || !desc || !imgFile || !fileUrl) {
-                return alert("Пожалуйста, заполните все поля!");
+                return showToast("Пожалуйста, заполните все поля!", 'error');
             }
 
             try {
@@ -246,7 +302,7 @@
                     createdAt: Date.now()
                 });
 
-                alert("Мод успешно опубликован!");
+                showToast("Мод успешно опубликован!", 'success');
                 document.getElementById('mod-title').value = '';
                 document.getElementById('mod-desc').value = '';
                 document.getElementById('mod-image-file').value = '';
@@ -255,7 +311,7 @@
                 showScreen('main');
             } catch (error) {
                 console.error(error);
-                alert("Ошибка при публикации: " + error.message);
+                showToast("Ошибка при публикации: " + error.message, 'error');
             } finally {
                 toggleLoading(false);
             }
@@ -317,10 +373,10 @@
             try {
                 toggleLoading(true);
                 await deleteDoc(doc(db, "mods", modId));
-                alert("Мод удален!");
+                showToast("Мод удален!", 'success');
                 loadMyMods();
             } catch (error) {
-                alert("Ошибка удаления: " + error.message);
+                showToast("Ошибка удаления: " + error.message, 'error');
             } finally {
                 toggleLoading(false);
             }
