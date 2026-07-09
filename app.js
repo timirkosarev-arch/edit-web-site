@@ -1,175 +1,241 @@
-// Подключаем нужные модули Firebase версии 10
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+// app.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-// Берем конфиг из отдельного файла
-import { firebaseConfig } from './config.js';
+import { firebaseConfig, IMGBBB_API_KEY } from "./config.js";
 
-// Инициализация
+// Инициализация Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-const IMGBB_API_KEY = "91baa56297963d72b88d39e4aee75835";
-
-const showUploadBtn = document.getElementById('show-upload-btn');
-const uploadSection = document.getElementById('upload-section');
-const cancelBtn = document.getElementById('cancel-btn');
-
-// Логика отображения кнопки и формы в зависимости от авторизации
-onAuthStateChanged(auth, (user) => {
-    currentUser = user;
-    if (user) {
-        authBtn.textContent = "Выйти (" + user.displayName + ")";
-        showUploadBtn.style.display = "block"; // Показываем кнопку загрузки
-    } else {
-        authBtn.textContent = "Войти через Google";
-        showUploadBtn.style.display = "none";
-        uploadSection.style.display = "none"; // Прячем форму, если вышли
-    }
-});
-
-// Открыть форму
-showUploadBtn.addEventListener('click', () => {
-    uploadSection.style.display = "block";
-    showUploadBtn.style.display = "none"; // Прячем кнопку, пока открыта форма
-});
-
-// Закрыть форму
-cancelBtn.addEventListener('click', () => {
-    uploadSection.style.display = "none";
-    showUploadBtn.style.display = "block";
-});
-
-// После успешной загрузки в блоке uploadForm.addEventListener('submit', ...)
-// Добавь в конце:
-uploadSection.style.display = "none";
-showUploadBtn.style.display = "block";
-
-// Элементы на странице
-const authBtn = document.getElementById('auth-btn');
-const uploadSection = document.getElementById('upload-section');
-const uploadForm = document.getElementById('upload-form');
-const submitBtn = document.getElementById('submit-btn');
-const modsContainer = document.getElementById('mods-container');
-const searchBar = document.getElementById('search-bar');
-
+// Переменная для хранения текущего пользователя
 let currentUser = null;
-let allMods = []; // Сохраняем моды для поиска
 
-// --- АВТОРИЗАЦИЯ ---
-authBtn.addEventListener('click', () => {
-    if (currentUser) {
-        signOut(auth);
-    } else {
-        const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider).catch(err => console.error("Ошибка входа:", err));
-    }
-});
+/* --- НАВИГАЦИЯ МЕЖДУ ЭКРАНАМИ --- */
+const screens = ['main', 'profile', 'upload', 'auth'];
+function showScreen(screenName) {
+    screens.forEach(s => {
+        document.getElementById(`screen-${s}`).classList.remove('active');
+    });
+    document.getElementById(`screen-${screenName}`).classList.add('active');
+    
+    if (screenName === 'main') loadAllMods();
+    if (screenName === 'profile') loadMyMods();
+}
 
+document.getElementById('logo-btn').addEventListener('click', () => showScreen('main'));
+document.getElementById('nav-main').addEventListener('click', () => showScreen('main'));
+document.getElementById('nav-upload').addEventListener('click', () => showScreen('upload'));
+document.getElementById('nav-profile').addEventListener('click', () => showScreen('profile'));
+document.getElementById('nav-auth').addEventListener('click', () => showScreen('auth'));
+
+/* --- ИНДИКАТОР ЗАГРУЗКИ --- */
+function toggleLoading(show) {
+    document.getElementById('loading-status').style.display = show ? 'block' : 'none';
+}
+
+/* --- СЛУШАТЕЛЬ СОСТОЯНИЯ ПОЛЬЗОВАТЕЛЯ (AUTH) --- */
 onAuthStateChanged(auth, (user) => {
     currentUser = user;
     if (user) {
-        authBtn.textContent = "Выйти (" + user.displayName + ")";
-        uploadSection.style.display = "block"; // Показываем форму
+        document.getElementById('user-email').innerText = user.email;
+        document.getElementById('nav-auth').style.display = 'none';
+        document.getElementById('nav-logout').style.display = 'inline-block';
+        document.getElementById('nav-upload').style.display = 'inline-block';
+        document.getElementById('nav-profile').style.display = 'inline-block';
+        if(document.getElementById('screen-auth').classList.contains('active')) {
+            showScreen('main');
+        }
     } else {
-        authBtn.textContent = "Войти через Google";
-        uploadSection.style.display = "none"; // Прячем форму
+        document.getElementById('user-email').innerText = '';
+        document.getElementById('nav-auth').style.display = 'inline-block';
+        document.getElementById('nav-logout').style.display = 'none';
+        document.getElementById('nav-upload').style.display = 'none';
+        document.getElementById('nav-profile').style.display = 'none';
+        showScreen('main');
     }
 });
 
-// --- ЗАГРУЗКА МОДА ---
-uploadForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+/* --- РЕГИСТРАЦИЯ И ВХОД --- */
+document.getElementById('register-btn').addEventListener('click', async () => {
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    try {
+        toggleLoading(true);
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert('Аккаунт успешно создан!');
+    } catch (error) {
+        alert('Ошибка регистрации: ' + error.message);
+    } finally { toggleLoading(false); }
+});
+
+document.getElementById('login-btn').addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    try {
+        toggleLoading(true);
+        await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+        alert('Ошибка входа: ' + error.message);
+    } finally { toggleLoading(false); }
+});
+
+document.getElementById('nav-logout').addEventListener('click', () => {
+    signOut(auth);
+});
+
+/* --- ЗАГРУЗКА КАРТИНКИ НА IMGBBB --- */
+async function uploadImageToImgBB(file) {
+    const formData = new FormData();
+    formData.append("image", file);
+    
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBBB_API_KEY}`, {
+        method: "POST",
+        body: formData
+    });
+    const data = await response.json();
+    if (data.success) {
+        return data.data.url; // Возвращает прямую ссылку на картинку
+    } else {
+        throw new Error("Не удалось загрузить картинку на ImgBB");
+    }
+}
+
+/* --- ПУБЛИКАЦИЯ МОДА (АРХИВ + КАРТИНКА + ДАННЫЕ) --- */
+document.getElementById('submit-mod-btn').addEventListener('click', async () => {
+    if (!currentUser) return alert("Войдите в аккаунт, чтобы добавить мод!");
     
     const title = document.getElementById('mod-title').value;
-    const megaLink = document.getElementById('mega-link').value;
-    const imageFile = document.getElementById('mod-image').files[0];
-
-    // Проверка ссылки на Mega
-    if (!megaLink.toLowerCase().includes('mega.nz')) {
-        alert('Ошибка: Ссылка должна вести на mega.nz!');
-        return;
+    const desc = document.getElementById('mod-desc').value;
+    const imgFile = document.getElementById('mod-image-file').files[0];
+    const archiveFile = document.getElementById('mod-archive-file').files[0];
+    
+    if (!title || !desc || !imgFile || !archiveFile) {
+        return alert("Пожалуйста, заполните все поля и выберите файлы!");
     }
-
-    if (!imageFile) return;
-
-    submitBtn.textContent = "Загрузка...";
-    submitBtn.disabled = true;
 
     try {
-        // 1. Грузим картинку в Storage
-        const imageRef = ref(storage, 'mod_images/' + Date.now() + '_' + imageFile.name);
-        await uploadBytes(imageRef, imageFile);
-        const imageUrl = await getDownloadURL(imageRef);
+        toggleLoading(true);
 
-        // 2. Сохраняем данные в Firestore
+        // 1. Загружаем картинку на ImgBB
+        const imageUrl = await uploadImageToImgBB(imgFile);
+
+        // 2. Загружаем архив мода в Firebase Storage
+        const archiveRef = ref(storage, `mods/${Date.now()}_${archiveFile.name}`);
+        const uploadResult = await uploadBytes(archiveRef, archiveFile);
+        const fileUrl = await getDownloadURL(uploadResult.ref);
+
+        // 3. Сохраняем информацию в базу данных Firestore
         await addDoc(collection(db, "mods"), {
             title: title,
-            megaLink: megaLink,
+            description: desc,
             imageUrl: imageUrl,
-            uploaderId: currentUser.uid,
-            uploaderName: currentUser.displayName,
-            timestamp: Date.now()
+            fileUrl: fileUrl,
+            storagePath: archiveRef.fullPath, // сохраняем путь для последующего удаления
+            userId: currentUser.uid,
+            userEmail: currentUser.email,
+            createdAt: Date.now()
         });
 
-        alert("Мод успешно загружен!");
-        uploadForm.reset();
-        loadMods(); // Обновляем список
+        alert("Мод успешно опубликован!");
+        // Сброс формы
+        document.getElementById('mod-title').value = '';
+        document.getElementById('mod-desc').value = '';
+        document.getElementById('mod-image-file').value = '';
+        document.getElementById('mod-archive-file').value = '';
+        
+        showScreen('main');
     } catch (error) {
-        console.error("Ошибка загрузки:", error);
-        alert("Произошла ошибка при загрузке.");
+        console.error(error);
+        alert("Ошибка при публикации: " + error.message);
     } finally {
-        submitBtn.textContent = "Загрузить";
-        submitBtn.disabled = false;
+        toggleLoading(false);
     }
 });
 
-// --- ВЫВОД И ПОИСК МОДОВ ---
-async function loadMods() {
-    modsContainer.innerHTML = 'Загрузка модов...';
-    
-    const q = query(collection(db, "mods"), orderBy("timestamp", "desc"));
-    const querySnapshot = await getDocs(q);
-    
-    allMods = [];
-    querySnapshot.forEach((doc) => {
-        allMods.push({ id: doc.id, ...doc.data() });
-    });
-    
-    renderMods(allMods);
+/* --- ОТОБРАЖЕНИЕ МОДОВ --- */
+function createModCard(modData, id, isProfile = false) {
+    return `
+        <div class="mod-card" id="mod-${id}">
+            <img class="mod-img" src="${modData.imageUrl}" alt="${modData.title}">
+            <div class="mod-info">
+                <div>
+                    <h3 class="mod-title">${modData.title}</h3>
+                    <p class="mod-desc">${modData.description}</p>
+                </div>
+                <div class="mod-actions">
+                    <a href="${modData.fileUrl}" class="btn-download" target="_blank" download>Скачать</a>
+                    ${isProfile ? `<button class="btn-delete" data-id="${id}" data-path="${modData.storagePath}">Удалить</button>` : ''}
+                </div>
+            </div>
+        </div>
+    `;
 }
 
-function renderMods(modsToRender) {
-    modsContainer.innerHTML = '';
+// Загрузка вообще всех модов на главную
+async function loadAllMods() {
+    const container = document.getElementById('all-mods-container');
+    container.innerHTML = '';
+    try {
+        const querySnapshot = await getDocs(collection(db, "mods"));
+        querySnapshot.forEach((doc) => {
+            container.innerHTML += createModCard(doc.data(), doc.id, false);
+        });
+    } catch (e) { console.error("Ошибка получения модов: ", e); }
+}
+
+// Загрузка модов конкретного залогиненного пользователя в его профиль
+async function loadMyMods() {
+    const container = document.getElementById('my-mods-container');
+    container.innerHTML = '';
+    if (!currentUser) return;
     
-    if (modsToRender.length === 0) {
-        modsContainer.innerHTML = '<p>Моды не найдены.</p>';
-        return;
+    try {
+        const q = query(collection(db, "mods"), where("userId", "==", currentUser.uid));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+            container.innerHTML += createModCard(doc.data(), doc.id, true);
+        });
+        
+        // Навешиваем события на кнопки удаления
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const modId = e.target.getAttribute('data-id');
+                const storagePath = e.target.getAttribute('data-path');
+                deleteMod(modId, storagePath);
+            });
+        });
+    } catch (e) { console.error("Ошибка получения профильных модов: ", e); }
+}
+
+/* --- УДАЛЕНИЕ МОДА --- */
+async function deleteMod(modId, storagePath) {
+    if(!confirm("Вы уверены, что хотите удалить этот мод?")) return;
+    
+    try {
+        toggleLoading(true);
+        
+        // 1. Удаляем сам файл (архив) из Firebase Storage
+        if (storagePath) {
+            const fileRef = ref(storage, storagePath);
+            await deleteObject(fileRef).catch(err => console.log("Файл в хранилище не найден или уже удален"));
+        }
+        
+        // 2. Удаляем документ из базы данных Firestore
+        await deleteDoc(doc(db, "mods", modId));
+        
+        alert("Мод удален!");
+        loadMyMods(); // обновляем профиль
+    } catch (error) {
+        alert("Ошибка удаления: " + error.message);
+    } finally {
+        toggleLoading(false);
     }
-
-    modsToRender.forEach(mod => {
-        const modCard = document.createElement('div');
-        modCard.className = 'mod-card';
-        modCard.innerHTML = `
-            <img src="${mod.imageUrl}" alt="${mod.title}">
-            <h3>${mod.title}</h3>
-            <p style="font-size: 12px; margin: 0 15px 10px; color: #888;">Загрузил: ${mod.uploaderName}</p>
-            <a href="${mod.megaLink}" target="_blank">Скачать с Mega.nz</a>
-        `;
-        modsContainer.appendChild(modCard);
-    });
 }
 
-// Живой поиск по названию
-searchBar.addEventListener('input', (e) => {
-    const queryStr = e.target.value.toLowerCase();
-    const filteredMods = allMods.filter(mod => mod.title.toLowerCase().includes(queryStr));
-    renderMods(filteredMods);
-});
-
-// Загружаем моды при старте
-loadMods();
+// Изначальная загрузка главной страницы при открытии сайта
+loadAllMods();
