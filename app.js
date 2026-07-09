@@ -1,95 +1,139 @@
-// Переменная текущего активного проекта
-let currentProjectId = "test-project-id"; // Замени на свою логику генерации/получения ID
+// Подключаем нужные модули Firebase версии 10
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-// Инициализация обработчиков событий
-document.getElementById('btn-save').addEventListener('click', saveProjectToServer);
+// Берем конфиг из отдельного файла
+import { firebaseConfig } from './config.js';
 
-/**
- * ФУНКЦИЯ СОХРАНЕНИЯ ПРОЕКТА В FIRESTORE
- */
-async function saveProjectToServer() {
-    // Получаем кастомные значения из полей ввода
-    const customTitle = document.getElementById('site-title').value.trim() || 'Новый проект';
-    const customFavicon = document.getElementById('site-favicon').value.trim() || '';
-    const sitePassword = document.getElementById('site-password').value;
-    
-    // Получаем написанный пользователем код (пример для стандартного textarea)
-    const codeContent = document.getElementById('code-textarea').value;
+// Инициализация
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-    // Формируем единый объект для отправки в коллекцию
-    const updatedProjectData = {
-        title: customTitle,       // Уникальный заголовок вкладки
-        favicon: customFavicon,   // Ссылка на аватарку вкладки
-        password: sitePassword,
-        htmlCode: codeContent,
-        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-    };
+// Элементы на странице
+const authBtn = document.getElementById('auth-btn');
+const uploadSection = document.getElementById('upload-section');
+const uploadForm = document.getElementById('upload-form');
+const submitBtn = document.getElementById('submit-btn');
+const modsContainer = document.getElementById('mods-container');
+const searchBar = document.getElementById('search-bar');
 
-    try {
-        // Отправляем структурированные данные в Firestore в домен published_sites
-        await db.collection('published_sites').doc(currentProjectId).set(updatedProjectData, { merge: true });
-        showUiToast('Проект успешно сохранен', 'success');
-    } catch (error) {
-        showUiToast('Ошибка сохранения: ' + error.message, 'error');
-    }
-}
+let currentUser = null;
+let allMods = []; // Сохраняем моды для поиска
 
-/**
- * ФУНКЦИЯ ОТОБРАЖЕНИЯ УВЕДОМЛЕНИЙ
- */
-function showUiToast(message, type = 'error') {
-    const toast = document.getElementById('toast-notification');
-    toast.textContent = message;
-    toast.className = 'toast'; // сброс классов
-    
-    if (type === 'success') {
-        toast.classList.add('success');
-    }
-    
-    toast.classList.remove('hidden');
-    
-    setTimeout(() => {
-        toast.classList.add('hidden');
-    }, 4000);
-}
-
-
-/**
- * ЭТОТ КУСОК КОДА ДЛЖЕН СТОЯТЬ НА СТРАНИЦЕ ВЫВОДА/ПРОСМОТРА СОЗДАННОГО САЙТА
- * Она принимает данные из Firestore и бесшовно подменяет мета-данные вкладки.
- */
-function applyCustomMetadataToLoadedSite(projectData) {
-    // 1. Динамически меняем название вкладки в браузере на то, что указал юзер
-    if (projectData.title) {
-        document.title = projectData.title;
+// --- АВТОРИЗАЦИЯ ---
+authBtn.addEventListener('click', () => {
+    if (currentUser) {
+        signOut(auth);
     } else {
-        document.title = "Создано в WED EDITOR";
-    }
-
-    // 2. Ищем или создаем тег link для иконки во вкладке
-    if (projectData.favicon) {
-        let faviconLink = document.querySelector("link[rel~='icon']");
-        
-        if (!faviconLink) {
-            faviconLink = document.createElement('link');
-            faviconLink.rel = 'icon';
-            document.head.appendChild(faviconLink);
-        }
-        
-        // Подставляем ссылку на пользовательскую картинку
-        faviconLink.href = projectData.favicon;
-    }
-}
-
-// Пример использования на финальном сайте при загрузке данных:
-/*
-db.collection('published_sites').doc(loadedSiteId).get().then((doc) => {
-    if (doc.exists) {
-        const data = doc.data();
-        applyCustomMetadataToLoadedSite(data); // Подменяем название и аву во вкладке
-        
-        // Рендерим сам код сайта (вставляем в iframe или на страницу)
-        document.body.innerHTML = data.htmlCode; 
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider).catch(err => console.error("Ошибка входа:", err));
     }
 });
-*/
+
+onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    if (user) {
+        authBtn.textContent = "Выйти (" + user.displayName + ")";
+        uploadSection.style.display = "block"; // Показываем форму
+    } else {
+        authBtn.textContent = "Войти через Google";
+        uploadSection.style.display = "none"; // Прячем форму
+    }
+});
+
+// --- ЗАГРУЗКА МОДА ---
+uploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const title = document.getElementById('mod-title').value;
+    const megaLink = document.getElementById('mega-link').value;
+    const imageFile = document.getElementById('mod-image').files[0];
+
+    // Проверка ссылки на Mega
+    if (!megaLink.toLowerCase().includes('mega.nz')) {
+        alert('Ошибка: Ссылка должна вести на mega.nz!');
+        return;
+    }
+
+    if (!imageFile) return;
+
+    submitBtn.textContent = "Загрузка...";
+    submitBtn.disabled = true;
+
+    try {
+        // 1. Грузим картинку в Storage
+        const imageRef = ref(storage, 'mod_images/' + Date.now() + '_' + imageFile.name);
+        await uploadBytes(imageRef, imageFile);
+        const imageUrl = await getDownloadURL(imageRef);
+
+        // 2. Сохраняем данные в Firestore
+        await addDoc(collection(db, "mods"), {
+            title: title,
+            megaLink: megaLink,
+            imageUrl: imageUrl,
+            uploaderId: currentUser.uid,
+            uploaderName: currentUser.displayName,
+            timestamp: Date.now()
+        });
+
+        alert("Мод успешно загружен!");
+        uploadForm.reset();
+        loadMods(); // Обновляем список
+    } catch (error) {
+        console.error("Ошибка загрузки:", error);
+        alert("Произошла ошибка при загрузке.");
+    } finally {
+        submitBtn.textContent = "Загрузить";
+        submitBtn.disabled = false;
+    }
+});
+
+// --- ВЫВОД И ПОИСК МОДОВ ---
+async function loadMods() {
+    modsContainer.innerHTML = 'Загрузка модов...';
+    
+    const q = query(collection(db, "mods"), orderBy("timestamp", "desc"));
+    const querySnapshot = await getDocs(q);
+    
+    allMods = [];
+    querySnapshot.forEach((doc) => {
+        allMods.push({ id: doc.id, ...doc.data() });
+    });
+    
+    renderMods(allMods);
+}
+
+function renderMods(modsToRender) {
+    modsContainer.innerHTML = '';
+    
+    if (modsToRender.length === 0) {
+        modsContainer.innerHTML = '<p>Моды не найдены.</p>';
+        return;
+    }
+
+    modsToRender.forEach(mod => {
+        const modCard = document.createElement('div');
+        modCard.className = 'mod-card';
+        modCard.innerHTML = `
+            <img src="${mod.imageUrl}" alt="${mod.title}">
+            <h3>${mod.title}</h3>
+            <p style="font-size: 12px; margin: 0 15px 10px; color: #888;">Загрузил: ${mod.uploaderName}</p>
+            <a href="${mod.megaLink}" target="_blank">Скачать с Mega.nz</a>
+        `;
+        modsContainer.appendChild(modCard);
+    });
+}
+
+// Живой поиск по названию
+searchBar.addEventListener('input', (e) => {
+    const queryStr = e.target.value.toLowerCase();
+    const filteredMods = allMods.filter(mod => mod.title.toLowerCase().includes(queryStr));
+    renderMods(filteredMods);
+});
+
+// Загружаем моды при старте
+loadMods();
