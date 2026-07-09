@@ -3,129 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GOD MOD BY DENTIKS - Ультимативный мод для GTA 5</title>
+    <title>GTA 5 Mods</title>
     <style>
-        /* Базовые настройки страницы */
-        body {
-            background-color: #0f0f0f;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-image: radial-gradient(circle at 50% 0%, #2a0808 0%, #0f0f0f 70%);
-        }
-
-        /* Главный контейнер (карточка) */
-        .container {
-            background-color: #1a1a1a;
-            max-width: 600px;
-            padding: 40px 50px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-            border-top: 5px solid #fa3232; /* Красная полоса сверху, как в меню */
-            text-align: center;
-        }
-
-        /* Заголовки */
-        h1 {
-            color: #fa3232;
-            font-size: 2.8em;
-            margin: 0 0 10px 0;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #ffffff; margin: 0; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #333; }
+        input[type="text"], input[type="url"], input[type="file"] { padding: 10px; border: none; border-radius: 5px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+        input[type="text"] { background: #222; color: white; border: 1px solid #444; }
+        button { padding: 10px 20px; background-color: #f0c808; color: #000; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #d1ae00; }
         
-        .subtitle {
-            color: #aaaaaa;
-            font-size: 1.1em;
-            margin-bottom: 30px;
-        }
-
-        /* Список фич */
-        .features {
-            text-align: left;
-            background-color: #111111;
-            padding: 20px 30px;
-            border-radius: 8px;
-            margin-bottom: 35px;
-            list-style: none;
-        }
-
-        .features li {
-            margin-bottom: 12px;
-            font-size: 1.1em;
-            line-height: 1.5;
-        }
-
-        .features li:last-child {
-            margin-bottom: 0;
-        }
-
-        /* Красные галочки */
-        .check {
-            color: #fa3232;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        /* Кнопка скачивания */
-        .download-btn {
-            display: inline-block;
-            background-color: #fa3232;
-            color: white;
-            text-decoration: none;
-            font-size: 1.4em;
-            font-weight: bold;
-            padding: 15px 40px;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(250, 50, 50, 0.3);
-        }
-
-        .download-btn:hover {
-            background-color: #ff4b4b;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(250, 50, 50, 0.5);
-        }
-
-        .download-btn:active {
-            transform: translateY(1px);
-        }
-
-        /* Подвал */
-        .footer {
-            margin-top: 25px;
-            font-size: 0.85em;
-            color: #555555;
-        }
+        #upload-section { background: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: none; }
+        #search-bar { width: 300px; }
+        
+        .mods-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .mod-card { background: #1e1e1e; border-radius: 8px; overflow: hidden; padding-bottom: 15px; }
+        .mod-card img { width: 100%; height: 150px; object-fit: cover; }
+        .mod-card h3 { margin: 10px 15px; }
+        .mod-card a { display: block; margin: 0 15px; text-decoration: none; background: #e53935; color: white; text-align: center; padding: 8px; border-radius: 5px; }
+        .mod-card a:hover { background: #c62828; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>GOD MOD BY DENTIKS</h1>
-        <p class="subtitle">Летай, бегай со скоростью света и стань бессмертным в GTA V</p>
+    <header>
+        <h1>GTA 5 Mods</h1>
+        <input type="text" id="search-bar" placeholder="Поиск модов...">
+        <button id="auth-btn">Войти через Google</button>
+    </header>
 
-        <ul class="features">
-            <li><span class="check">✓</span> <b>Внутриигровое меню (F9):</b> Меняй кнопки и скорости прямо в игре.</li>
-            <li><span class="check">✓</span> <b>Fly Mode:</b> Управляемый полет на машинах и пешком.</li>
-            <li><span class="check">✓</span> <b>Fast Run:</b> Космический бег (настраивается от 5 до 150 ед.).</li>
-            <li><span class="check">✓</span> <b>God Mode:</b> Полная неуязвимость по нажатию одной кнопки.</li>
-        </ul>
-
-        <!-- ВАЖНО: Вставь свою ссылку вместо символа # в кавычках -->
-        <a href="#" class="download-btn" target="_blank">Скачать мод</a>
-
-        <div class="footer">
-            Установка: закиньте FlyMod.asi в корневую папку GTA 5.<br>
-            Для работы требуется ScriptHookV.
-        </div>
+    <div id="upload-section">
+        <h2>Выложить мод</h2>
+        <form id="upload-form">
+            <input type="text" id="mod-title" placeholder="Название мода" required>
+            <input type="url" id="mega-link" placeholder="Ссылка на Mega.nz (обязательно)" required>
+            <label for="mod-image">Превью (картинка):</label>
+            <input type="file" id="mod-image" accept="image/*" required>
+            <button type="submit" id="submit-btn">Загрузить</button>
+        </form>
     </div>
 
+    <div class="mods-grid" id="mods-container">
+        </div>
+
+    <script type="module" src="app.js"></script>
 </body>
 </html>
