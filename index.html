@@ -3,48 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTA 5 Mods</title>
+    <title>GTA 5 Mods Hub</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #ffffff; margin: 0; padding: 20px; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #333; }
-        input[type="text"], input[type="url"], input[type="file"] { padding: 10px; border: none; border-radius: 5px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
-        input[type="text"] { background: #222; color: white; border: 1px solid #444; }
-        button { padding: 10px 20px; background-color: #f0c808; color: #000; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #d1ae00; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background: #1a1a1a; color: #fff; padding-bottom: 50px; }
+        header { background: #111; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #00ff66; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 24px; font-weight: bold; color: #00ff66; cursor: pointer; }
+        nav button { background: #222; color: #fff; border: 1px solid #444; padding: 8px 15px; margin-left: 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        nav button:hover { background: #00ff66; color: #000; border-color: #00ff66; }
+        .btn-upload { background: #00ff66; color: #000; border: none; }
         
-        #upload-section { background: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: none; }
-        #search-bar { width: 300px; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Формы */
+        .form-box { background: #222; padding: 30px; border-radius: 8px; max-width: 500px; margin: 50px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .form-box h2 { margin-bottom: 20px; color: #00ff66; }
+        input, textarea { width: 100%; padding: 10px; margin-bottom: 15px; background: #333; border: 1px solid #555; color: #fff; border-radius: 4px; }
+        input[type="file"] { background: none; border: none; }
+        .form-box button { width: 100%; padding: 12px; background: #00ff66; border: none; color: #000; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .form-box p { margin-top: 15px; text-align: center; color: #aaa; cursor: pointer; }
+
+        /* Сетка модов */
+        .mods-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
+        .mod-card { background: #222; border-radius: 8px; overflow: hidden; border: 1px solid #333; transition: 0.3s; display: flex; flex-direction: column; }
+        .mod-card:hover { transform: translateY(-5px); border-color: #00ff66; }
+        .mod-img { width: 100%; height: 180px; object-fit: cover; background: #333; }
+        .mod-info { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .mod-title { font-size: 18px; margin-bottom: 8px; }
+        .mod-desc { color: #aaa; font-size: 14px; margin-bottom: 15px; flex-grow: 1; }
+        .mod-actions { display: flex; gap: 10px; }
+        .btn-download { background: #00ff66; color: #000; padding: 8px; text-align: center; text-decoration: none; font-weight: bold; border-radius: 4px; flex-grow: 1; }
+        .btn-delete { background: #ff3333; color: #fff; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; }
         
-        .mods-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .mod-card { background: #1e1e1e; border-radius: 8px; overflow: hidden; padding-bottom: 15px; }
-        .mod-card img { width: 100%; height: 150px; object-fit: cover; }
-        .mod-card h3 { margin: 10px 15px; }
-        .mod-card a { display: block; margin: 0 15px; text-decoration: none; background: #e53935; color: white; text-align: center; padding: 8px; border-radius: 5px; }
-        .mod-card a:hover { background: #c62828; }
+        .loading { color: #00ff66; text-align: center; font-size: 18px; margin: 20px 0; display: none; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>GTA 5 Mods</h1>
-        <input type="text" id="search-bar" placeholder="Поиск модов...">
-        <button id="auth-btn">Войти через Google</button>
+        <div class="logo" id="logo-btn">GTA5 MODS</div>
+        <nav>
+            <span id="user-email" style="margin-right: 15px; color: #aaa;"></span>
+            <button id="nav-main">Главная</button>
+            <button id="nav-upload" class="btn-upload" style="display:none;">Upload (Загрузить)</button>
+            <button id="nav-profile" style="display:none;">Мой Профиль</button>
+            <button id="nav-auth">Войти</button>
+            <button id="nav-logout" style="display:none;">Выйти</button>
+        </nav>
     </header>
 
-    <div id="upload-section">
-        <h2>Выложить мод</h2>
-        <form id="upload-form">
-            <input type="text" id="mod-title" placeholder="Название мода" required>
-            <input type="url" id="mega-link" placeholder="Ссылка на Mega.nz (обязательно)" required>
-            <label for="mod-image">Превью (картинка):</label>
-            <input type="file" id="mod-image" accept="image/*" required>
-            <button type="submit" id="submit-btn">Загрузить</button>
-        </form>
-    </div>
+    <div class="container">
+        <div id="loading-status" class="loading">Обработка данных, пожалуйста подождите...</div>
 
-    <div class="mods-grid" id="mods-container">
+        <div id="screen-main" class="screen active">
+            <h2>Все моды</h2>
+            <div class="mods-grid" id="all-mods-container"></div>
         </div>
 
+        <div id="screen-profile" class="screen">
+            <h2>Мои загруженные моды</h2>
+            <div class="mods-grid" id="my-mods-container"></div>
+        </div>
+
+        <div id="screen-upload" class="screen">
+            <div class="form-box">
+                <h2>Загрузить новый мод</h2>
+                <input type="text" id="mod-title" placeholder="Название мода" required>
+                <textarea id="mod-desc" placeholder="Описание мода" rows="4" required></textarea>
+                
+                <label>Картинка мода (Превью):</label>
+                <input type="file" id="mod-image-file" accept="image/*" required>
+                
+                <label>Файл мода или папка (Архив .zip/.rar):</label>
+                <input type="file" id="mod-archive-file" accept=".zip,.rar,.7z" required>
+                
+                <button id="submit-mod-btn">Опубликовать мод</button>
+            </div>
+        </div>
+
+        <div id="screen-auth" class="screen">
+            <div class="form-box" id="auth-login-form">
+                <h2>Вход на сайт</h2>
+                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Пароль" required>
+                <button id="login-btn">Войти</button>
+                <p onclick="toggleAuthForms(false)">Нет аккаунта? Зарегистрироваться</p>
+            </div>
+            <div class="form-box" id="auth-register-form" style="display:none;">
+                <h2>Регистрация</h2>
+                <input type="email" id="reg-email" placeholder="Email" required>
+                <input type="password" id="reg-password" placeholder="Пароль (мин. 6 символов)" required>
+                <button id="register-btn">Создать аккаунт</button>
+                <p onclick="toggleAuthForms(true)">Уже есть аккаунт? Войти</p>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="app.js"></script>
+    <script>
+        // Простая функция переключения между формами входа/регистрации внутри экрана авторизации
+        function toggleAuthForms(showLogin) {
+            document.getElementById('auth-login-form').style.display = showLogin ? 'block' : 'none';
+            document.getElementById('auth-register-form').style.display = showLogin ? 'none' : 'block';
+        }
+    </script>
 </body>
 </html>
