@@ -231,23 +231,28 @@
             showToast('Ошибка при входе: ' + error.message, 'error');
         });
 
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-                document.getElementById('user-email').innerText = user.email;
-                document.getElementById('nav-auth').style.display = 'none';
-                document.getElementById('nav-logout').style.display = 'inline-block';
-                document.getElementById('nav-upload').style.display = 'inline-block';
-                document.getElementById('nav-profile').style.display = 'inline-block';
-                if(document.getElementById('screen-auth').classList.contains('active')) showScreen('main');
-            } else {
-                document.getElementById('user-email').innerText = '';
-                document.getElementById('nav-auth').style.display = 'inline-block';
-                document.getElementById('nav-logout').style.display = 'none';
-                document.getElementById('nav-upload').style.display = 'none';
-                document.getElementById('nav-profile').style.display = 'none';
-            }
-        });
+        // Замени свой текущий блок onAuthStateChanged на этот:
+onAuthStateChanged(auth, (user) => {
+    console.log("--- СТАТУС АВТОРИЗАЦИИ ---");
+    if (user) {
+        console.log("Пользователь найден:", user.email);
+        currentUser = user;
+        document.getElementById('user-email').innerText = user.email;
+        document.getElementById('nav-auth').style.display = 'none';
+        document.getElementById('nav-logout').style.display = 'inline-block';
+        document.getElementById('nav-upload').style.display = 'inline-block';
+        document.getElementById('nav-profile').style.display = 'inline-block';
+        // Если находимся на экране входа, перекидываем на главный
+        if(document.getElementById('screen-auth').classList.contains('active')) showScreen('main');
+    } else {
+        console.log("Пользователь не найден (не залогинен)");
+        document.getElementById('user-email').innerText = '';
+        document.getElementById('nav-auth').style.display = 'inline-block';
+        document.getElementById('nav-logout').style.display = 'none';
+        document.getElementById('nav-upload').style.display = 'none';
+        document.getElementById('nav-profile').style.display = 'none';
+    }
+});
 
         document.getElementById('register-btn').addEventListener('click', async () => {
             const email = document.getElementById('reg-email').value;
