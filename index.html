@@ -280,6 +280,17 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById('google-login-btn').addEventListener('click', () => {
             toggleLoading(true);
             signInWithRedirect(auth, googleProvider);
+            // Найди место, где у тебя функция входа, и обнови её примерно так:
+const loginWithGoogle = async () => {
+    try {
+        console.log("Попытка входа...");
+        await signInWithPopup(auth, provider);
+        console.log("Успешный вход!");
+    } catch (error) {
+        console.error("ОШИБКА ПРИ ВХОДЕ:", error);
+        alert("Ошибка при входе: " + error.message);
+    }
+};
         });
 
         document.getElementById('nav-logout').addEventListener('click', () => {
