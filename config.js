@@ -1,5 +1,9 @@
-export const firebaseConfig = {
-    apiKey: "AIzaSyAnrXmovXmBIGocOsbJxSIQ_7dwlHpccdU",
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAnrXmovXmBIGocOsbJxSIQ_7dwlHpccdU",
   authDomain: "edit-web.firebaseapp.com",
   databaseURL: "https://edit-web-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "edit-web",
@@ -9,4 +13,7 @@ export const firebaseConfig = {
   measurementId: "G-7VJJSECTXX"
 };
 
-export const IMGBBB_API_KEY = "91baa56297963d72b88d39e4aee75835";
+// Инициализация
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const provider = new GoogleAuthProvider();
