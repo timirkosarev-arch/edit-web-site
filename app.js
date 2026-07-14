@@ -1,38 +1,55 @@
-// app.js
-import { auth, provider } from "./config.js";
-import { signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// --- Логика интерфейса ---
 
-// Элементы интерфейса
-const loginScreen = document.getElementById('loginScreen');
-const dashboardScreen = document.getElementById('dashboardScreen');
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
+// Кнопка прокрутки к приложениям
+const scrollToAppsBtn = document.getElementById('scrollToAppsBtn');
+const appsSection = document.getElementById('appsSection');
 
-// Слушатель состояния авторизации
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        // Пользователь авторизован - пускаем на сайт
-        loginScreen.classList.remove('active');
-        dashboardScreen.classList.remove('hidden');
-        dashboardScreen.classList.add('active');
-        logoutBtn.classList.remove('hidden');
-    } else {
-        // Нет авторизации - показываем стену входа
-        dashboardScreen.classList.remove('active');
-        dashboardScreen.classList.add('hidden');
-        loginScreen.classList.add('active');
-        logoutBtn.classList.add('hidden');
-    }
-});
+if (scrollToAppsBtn && appsSection) {
+    scrollToAppsBtn.addEventListener('click', () => {
+        appsSection.scrollIntoView({ behavior: 'smooth' });
+    });
+}
 
-// Логика входа
-loginBtn.addEventListener('click', () => {
-    signInWithPopup(auth, provider).catch((error) => {
-        console.error("Ошибка авторизации:", error);
+// Логика Модального окна (Подробнее)
+const modal = document.getElementById('appModal');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const detailsBtns = document.querySelectorAll('.details-btn');
+const copyLinkBtn = document.getElementById('copyLinkBtn');
+
+// Ссылка на приложение CodeEditor (потом заменишь на реальную ссылку)
+const codeEditorLink = "https://твой-домен.vercel.app/codeeditor";
+
+// Открыть окно
+detailsBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        modal.classList.remove('hidden');
     });
 });
 
-// Логика выхода
-logoutBtn.addEventListener('click', () => {
-    signOut(auth);
+// Закрыть окно
+closeModalBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+});
+
+// Закрыть при клике вне окна
+window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+        modal.classList.add('hidden');
+    }
+});
+
+// Скопировать ссылку
+copyLinkBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(codeEditorLink).then(() => {
+        const originalText = copyLinkBtn.innerText;
+        copyLinkBtn.innerText = "✅ Скопировано!";
+        copyLinkBtn.style.background = "#10b981"; // Зеленый цвет
+        
+        setTimeout(() => {
+            copyLinkBtn.innerText = originalText;
+            copyLinkBtn.style.background = "#2a2b36"; // Возвращаем цвет
+        }, 2000);
+    }).catch(err => {
+        console.error('Ошибка копирования: ', err);
+    });
 });
