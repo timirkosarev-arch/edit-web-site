@@ -3,204 +3,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P2P Маркетплейс</title>
+    <title>P2P Game Market</title>
     <style>
+        /* Игровая темная тема */
         :root {
-            --primary: #007bff;
-            --bg: #f4f4f9;
-            --text: #333;
+            --bg-main: #0f0f13;
+            --bg-card: #1a1a24;
+            --bg-hover: #2a2a36;
+            --primary: #8b5cf6; /* Неоновый фиолетовый */
+            --primary-hover: #7c3aed;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #2d2d3d;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); }
+        body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
         
-        /* Navbar */
-        header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .logo { font-size: 24px; font-weight: bold; color: var(--primary); }
-        .btn { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: 0.2s; }
-        .btn:hover { background: #0056b3; }
-        
-        /* Categories */
-        .categories { display: flex; gap: 10px; padding: 20px 30px; overflow-x: auto; }
-        .cat-btn { padding: 8px 15px; background: #ddd; border: none; border-radius: 20px; cursor: pointer; }
-        .cat-btn.active { background: var(--primary); color: white; }
+        /* Скроллбар */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
-        /* Listings Grid */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 0 30px 30px; }
-        .card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-        .card img { width: 100%; height: 200px; object-fit: cover; }
-        .card-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-price { font-size: 20px; font-weight: bold; margin: 10px 0; color: #28a745; }
-        .card-btn { margin-top: auto; background: #28a745; width: 100%; padding: 10px; color: white; text-align: center; border: none; border-radius: 5px; cursor: pointer; }
-
-        /* Modals */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 500px; position: relative; }
-        .close { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
+        /* Навигация */
+        header { background: var(--bg-card); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 24px; font-weight: 900; color: var(--primary); letter-spacing: 1px; cursor: pointer; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-link { color: var(--text-muted); cursor: pointer; font-weight: bold; transition: 0.3s; padding: 5px 10px; border-radius: 5px; }
+        .nav-link:hover, .nav-link.active { color: white; background: var(--bg-hover); }
         
-        /* Forms & Chat */
-        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        .chat-box { height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: #fafafa; display: flex; flex-direction: column; gap: 5px;}
-        .msg { padding: 8px 12px; border-radius: 15px; max-width: 80%; word-wrap: break-word; }
-        .msg.me { background: var(--primary); color: white; align-self: flex-end; }
-        .msg.other { background: #e0e0e0; align-self: flex-start; }
-        .chat-input-area { display: flex; gap: 10px; }
+        .btn { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: var(--primary); color: white; }
+
+        /* Контейнеры (Вкладки) */
+        .view-section { display: none; padding: 20px 30px; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Главная - Категории и Сетка */
+        .categories { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
+        .cat-btn { padding: 8px 16px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; white-space: nowrap; }
+        .cat-btn.active { background: var(--primary); border-color: var(--primary); font-weight: bold; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        .card { background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s; }
+        .card:hover { border-color: var(--primary); box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
+        .card img { width: 100%; height: 180px; object-fit: cover; border-bottom: 1px solid var(--border); }
+        .card-content { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .card-cat { color: var(--primary); font-size: 12px; text-transform: uppercase; font-weight: bold; }
+        .card-price { font-size: 22px; font-weight: bold; margin: 10px 0; color: #4ade80; }
+        .card-seller { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 14px; color: var(--text-muted); }
+        .card-seller img { width: 24px; height: 24px; border-radius: 50%; border: none; }
+        .card-btn { margin-top: auto; width: 100%; }
+
+        /* Профиль */
+        .profile-container { display: flex; gap: 30px; flex-wrap: wrap; }
+        .profile-settings { background: var(--bg-card); padding: 25px; border-radius: 12px; border: 1px solid var(--border); width: 300px; height: fit-content; text-align: center; }
+        .profile-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 3px solid var(--primary); cursor: pointer; }
+        .profile-settings input[type="text"] { width: 100%; padding: 10px; margin: 10px 0; background: var(--bg-main); border: 1px solid var(--border); color: white; border-radius: 6px; text-align: center; }
+        .profile-content { flex-grow: 1; }
+
+        /* Чаты (Настоящий мессенджер) */
+        .chat-layout { display: flex; height: calc(100vh - 120px); background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+        .chat-sidebar { width: 300px; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .chat-list { overflow-y: auto; flex-grow: 1; }
+        .chat-item { padding: 15px; display: flex; gap: 15px; align-items: center; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+        .chat-item:hover, .chat-item.active { background: var(--bg-hover); }
+        .chat-item img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+        .chat-item-info { overflow: hidden; }
+        .chat-item-name { font-weight: bold; margin-bottom: 3px; }
+        .chat-item-ad { font-size: 12px; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .chat-main { flex-grow: 1; display: flex; flex-direction: column; background: var(--bg-main); }
+        .chat-header { padding: 15px; background: var(--bg-card); border-bottom: 1px solid var(--border); font-weight: bold; display: flex; align-items: center; gap: 15px;}
+        .chat-header img { width: 40px; height: 40px; border-radius: 50%; }
+        .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 70%; padding: 10px 15px; border-radius: 12px; line-height: 1.4; word-wrap: break-word;}
+        .msg.me { background: var(--primary); align-self: flex-end; border-bottom-right-radius: 2px; }
+        .msg.other { background: var(--bg-card); border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 2px; }
+        .chat-input { padding: 15px; background: var(--bg-card); border-top: 1px solid var(--border); display: flex; gap: 10px; }
+        .chat-input input { flex-grow: 1; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-main); color: white; outline: none; }
+        .chat-input input:focus { border-color: var(--primary); }
+
+        /* Модалки и формы */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--bg-card); padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; position: relative; border: 1px solid var(--border); }
+        .close { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: var(--text-muted); }
+        .close:hover { color: white; }
+        form input, form select, form textarea { width: 100%; padding: 12px; margin: 10px 0; background: var(--bg-main); border: 1px solid var(--border); color: white; border-radius: 6px; outline: none;}
+        form input:focus, form select:focus, form textarea:focus { border-color: var(--primary); }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">MyMarket</div>
-        <div id="user-info">
-            <button class="btn" id="add-btn">Загрузить объявление</button>
+        <div class="logo" onclick="switchView('home')">P2P GameMarket</div>
+        <div class="nav-links" id="nav-links" style="display: none;">
+            <div class="nav-link active" onclick="switchView('home')" id="nav-home">Витрина</div>
+            <div class="nav-link" onclick="switchView('chats')" id="nav-chats">Чаты</div>
+            <div class="nav-link" onclick="switchView('profile')" id="nav-profile">Профиль</div>
         </div>
+        <button class="btn" id="auth-btn">Войти (Google)</button>
     </header>
 
-    <div class="categories" id="categories-container">
-        <!-- Категории сгенерируются через JS -->
-    </div>
+    <!-- Вкладка: ГЛАВНАЯ -->
+    <main class="view-section active" id="view-home">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="categories" id="categories-container"></div>
+            <button class="btn" id="create-ad-btn" style="display: none;">+ Создать объявление</button>
+        </div>
+        <div class="grid" id="listings-grid"></div>
+    </main>
 
-    <div class="grid" id="listings-grid">
-        <!-- Объявления появятся тут -->
-    </div>
+    <!-- Вкладка: ЧАТЫ -->
+    <main class="view-section" id="view-chats">
+        <div class="chat-layout">
+            <div class="chat-sidebar" id="chat-list">
+                <!-- Список чатов -->
+            </div>
+            <div class="chat-main" id="chat-window" style="display: none;">
+                <div class="chat-header" id="chat-header">
+                    <img src="" id="chat-header-avatar">
+                    <div>
+                        <div id="chat-header-name">Имя продавца/покупателя</div>
+                        <div id="chat-header-ad" style="font-size: 12px; color: var(--primary);">Объявление</div>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Сообщения -->
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="msg-input" placeholder="Введите сообщение...">
+                    <button class="btn" id="send-msg-btn">Отправить</button>
+                </div>
+            </div>
+            <div id="chat-placeholder" style="flex-grow: 1; display: flex; justify-content: center; align-items: center; color: var(--text-muted);">
+                Выберите чат слева, чтобы начать общение
+            </div>
+        </div>
+    </main>
+
+    <!-- Вкладка: ПРОФИЛЬ -->
+    <main class="view-section" id="view-profile">
+        <div class="profile-container">
+            <div class="profile-settings">
+                <h3>Настройки профиля</h3>
+                <img src="https://i.ibb.co/4pDNDk1/avatar.png" id="profile-avatar-img" class="profile-avatar" title="Нажмите, чтобы изменить">
+                <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                
+                <label style="font-size: 12px; color: var(--text-muted); text-align: left; display: block; margin-top: 10px;">Никнейм</label>
+                <input type="text" id="profile-name-input">
+                
+                <button class="btn" id="save-profile-btn" style="width: 100%; margin-top: 10px;">Сохранить профиль</button>
+                <button class="btn btn-outline" id="logout-btn" style="width: 100%; margin-top: 10px;">Выйти</button>
+            </div>
+            <div class="profile-content">
+                <h2>Мои объявления</h2>
+                <div class="grid" id="my-listings-grid" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </main>
 
     <!-- Модальное окно создания объявления -->
     <div class="modal" id="create-modal">
         <div class="modal-content">
             <span class="close" id="close-create">&times;</span>
-            <h2>Новое объявление</h2>
+            <h2 style="margin-bottom: 20px;">Новое объявление</h2>
             <form id="create-form">
-                <input type="text" id="ad-title" placeholder="Название товара" required>
+                <input type="text" id="ad-title" placeholder="Название (напр. Глобал Элита CS2, 1000 В-Баксов)" required>
                 <select id="ad-category" required>
-                    <option value="Электроника">Электроника</option>
-                    <option value="Одежда">Одежда</option>
-                    <option value="Услуги">Услуги</option>
-                    <option value="Авто">Авто</option>
+                    <!-- Заполнится из JS -->
                 </select>
-                <input type="number" id="ad-price" placeholder="Цена" required>
-                <textarea id="ad-desc" placeholder="Описание" rows="3" required></textarea>
+                <input type="number" id="ad-price" placeholder="Цена (₽)" required>
+                <textarea id="ad-desc" placeholder="Подробное описание товара или услуги" rows="4" required></textarea>
+                <label style="font-size: 14px; color: var(--text-muted);">Изображение товара</label>
                 <input type="file" id="ad-image" accept="image/*" required>
-                <button type="submit" class="btn" style="width: 100%;" id="submit-ad-btn">Опубликовать</button>
+                <button type="submit" class="btn" style="width: 100%; margin-top: 15px;" id="submit-ad-btn">Опубликовать объявление</button>
             </form>
         </div>
     </div>
 
-    <!-- Модальное окно чата -->
-    <div class="modal" id="chat-modal">
-        <div class="modal-content">
-            <span class="close" id="close-chat">&times;</span>
-            <h2 id="chat-title">Чат с продавцом</h2>
-            <div class="chat-box" id="chat-messages"></div>
-            <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Напишите сообщение...">
-                <button class="btn" id="send-msg-btn">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Звук уведомления (короткий приятный щелчок) -->
+    <!-- Звук уведомления -->
     <audio id="notify-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script type="module">
-        // Импортируем конфиги
         import { firebaseConfig, imgbbApiKey } from './config.js';
-        
-        // Импортируем Firebase SDK (v9 modular)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, getDoc, setDoc, doc, onSnapshot, query, where, orderBy, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Инициализация
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
         let currentUser = null;
+        let userData = null; // Данные из Firestore (для кастомных ников и аватарки)
         let activeChatId = null;
-        let unsubscribeChat = null; // Для отписки от сообщений при закрытии чата
+        let unsubscribeActiveChat = null;
+        let unsubscribeChatList = null;
 
-        // UI Элементы
-        const addBtn = document.getElementById('add-btn');
-        const createModal = document.getElementById('create-modal');
-        const closeCreate = document.getElementById('close-create');
-        const createForm = document.getElementById('create-form');
-        const listingsGrid = document.getElementById('listings-grid');
-        const chatModal = document.getElementById('chat-modal');
-        const closeChat = document.getElementById('close-chat');
-        const chatMessages = document.getElementById('chat-messages');
-        const chatInput = document.getElementById('chat-input');
-        const sendMsgBtn = document.getElementById('send-msg-btn');
-        const notifySound = document.getElementById('notify-sound');
-
-        // Категории
-        const categories = ['Все', 'Электроника', 'Одежда', 'Услуги', 'Авто'];
+        // Категории для игрового рынка
+        const categories = ['Все', 'Игровая валюта', 'Аккаунты', 'Предметы / Скины', 'Прокачка (Буст)', 'Игровые достижения', 'Ключи / Гифты'];
         let currentCategory = 'Все';
 
+        // --- ИНИЦИАЛИЗАЦИЯ UI ---
         function renderCategories() {
-            const container = document.getElementById('categories-container');
-            container.innerHTML = categories.map(cat => 
+            const catContainer = document.getElementById('categories-container');
+            const selectContainer = document.getElementById('ad-category');
+            
+            catContainer.innerHTML = categories.map(cat => 
                 `<button class="cat-btn ${cat === currentCategory ? 'active' : ''}" onclick="window.setCategory('${cat}')">${cat}</button>`
+            ).join('');
+
+            selectContainer.innerHTML = categories.filter(c => c !== 'Все').map(cat => 
+                `<option value="${cat}">${cat}</option>`
             ).join('');
         }
 
         window.setCategory = (cat) => {
             currentCategory = cat;
             renderCategories();
-            loadListings();
+            loadListings('home');
         };
 
-        // Слушатель состояния пользователя
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-                addBtn.innerText = "+ Добавить объявление";
-            } else {
-                addBtn.innerText = "Загрузить объявление (Вход)";
+        // --- СИСТЕМА ВКЛАДОК (РОУТИНГ) ---
+        window.switchView = (viewName) => {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            if(document.getElementById(`nav-${viewName}`)) {
+                document.getElementById(`nav-${viewName}`).classList.add('active');
             }
-        });
 
-        // Кнопка добавления / входа
-        addBtn.addEventListener('click', async () => {
-            if (!currentUser) {
-                try {
-                    await signInWithPopup(auth, provider);
-                } catch (error) {
-                    console.error("Ошибка входа:", error);
-                }
-            } else {
-                createModal.style.display = 'flex';
-            }
-        });
-
-        closeCreate.onclick = () => createModal.style.display = 'none';
-        closeChat.onclick = () => {
-            chatModal.style.display = 'none';
-            if (unsubscribeChat) unsubscribeChat(); // Отключаем прослушку при закрытии
+            if (viewName === 'home') loadListings('home');
+            if (viewName === 'profile') loadListings('profile');
         };
 
-        // Создание объявления (ImgBB + Firestore)
-        createForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('submit-ad-btn');
-            submitBtn.innerText = "Загрузка фото...";
-            submitBtn.disabled = true;
-
-            const file = document.getElementById('ad-image').files[0];
+        // --- УТИЛИТА ЗАГРУЗКИ КАРТИНОК В IMGBB ---
+        async function uploadToImgBB(file) {
             const formData = new FormData();
             formData.append('image', file);
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, { method: 'POST', body: formData });
+            const data = await res.json();
+            return data.data.url;
+        }
+
+        // --- АВТОРИЗАЦИЯ И ПРОФИЛЬ ---
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            const authBtn = document.getElementById('auth-btn');
+            const navLinks = document.getElementById('nav-links');
+            const createAdBtn = document.getElementById('create-ad-btn');
+
+            if (user) {
+                // Пытаемся получить профиль из БД
+                const userDocRef = doc(db, "users", user.uid);
+                let docSnap = await getDoc(userDocRef);
+                
+                if (!docSnap.exists()) {
+                    // Если первый вход - создаем профиль
+                    userData = { uid: user.uid, displayName: user.displayName || "Gamer", photoURL: user.photoURL || "https://i.ibb.co/4pDNDk1/avatar.png" };
+                    await setDoc(userDocRef, userData);
+                } else {
+                    userData = docSnap.data();
+                }
+
+                // Обновляем UI
+                authBtn.style.display = 'none';
+                navLinks.style.display = 'flex';
+                createAdBtn.style.display = 'block';
+
+                // Заполняем вкладку профиля
+                document.getElementById('profile-name-input').value = userData.displayName;
+                document.getElementById('profile-avatar-img').src = userData.photoURL;
+
+                initChatListListener(); // Запускаем прослушку списка чатов
+                switchView('home');
+            } else {
+                authBtn.style.display = 'block';
+                authBtn.innerText = "Войти (Google)";
+                navLinks.style.display = 'none';
+                createAdBtn.style.display = 'none';
+                if(unsubscribeChatList) unsubscribeChatList();
+                switchView('home');
+            }
+        });
+
+        document.getElementById('auth-btn').onclick = () => signInWithPopup(auth, provider);
+        document.getElementById('logout-btn').onclick = () => signOut(auth).then(() => location.reload());
+
+        // Загрузка аватарки по клику
+        document.getElementById('profile-avatar-img').onclick = () => document.getElementById('avatar-upload').click();
+        
+        document.getElementById('avatar-upload').onchange = (e) => {
+            if(e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => document.getElementById('profile-avatar-img').src = e.target.result;
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        };
+
+        // Сохранение профиля
+        document.getElementById('save-profile-btn').onclick = async () => {
+            const btn = document.getElementById('save-profile-btn');
+            btn.innerText = "Сохранение...";
+            btn.disabled = true;
+
+            let newAvatarUrl = userData.photoURL;
+            const fileInput = document.getElementById('avatar-upload');
+            const newName = document.getElementById('profile-name-input').value.trim();
 
             try {
-                // Загрузка в ImgBB
-                const imgRes = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
-                    method: 'POST',
-                    body: formData
+                if (fileInput.files.length > 0) {
+                    newAvatarUrl = await uploadToImgBB(fileInput.files[0]);
+                }
+                
+                userData.displayName = newName || userData.displayName;
+                userData.photoURL = newAvatarUrl;
+
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    displayName: userData.displayName,
+                    photoURL: userData.photoURL
                 });
-                const imgData = await imgRes.json();
-                const imageUrl = imgData.data.url;
 
-                submitBtn.innerText = "Публикация...";
+                document.getElementById('profile-avatar-img').src = userData.photoURL;
+                alert("Профиль успешно обновлен!");
+                loadListings('home'); // Обновляем витрину, чтобы обновить авторов
+            } catch (err) {
+                alert("Ошибка сохранения: " + err.message);
+            } finally {
+                btn.innerText = "Сохранить профиль";
+                btn.disabled = false;
+            }
+        };
 
-                // Сохранение в Firebase
+        // --- СОЗДАНИЕ И ОТОБРАЖЕНИЕ ОБЪЯВЛЕНИЙ ---
+        document.getElementById('create-ad-btn').onclick = () => document.getElementById('create-modal').style.display = 'flex';
+        document.getElementById('close-create').onclick = () => document.getElementById('create-modal').style.display = 'none';
+
+        document.getElementById('create-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-ad-btn');
+            btn.innerText = "Загрузка фото...";
+            btn.disabled = true;
+
+            try {
+                const imageUrl = await uploadToImgBB(document.getElementById('ad-image').files[0]);
+                btn.innerText = "Публикация...";
+
                 await addDoc(collection(db, "listings"), {
                     title: document.getElementById('ad-title').value,
                     category: document.getElementById('ad-category').value,
@@ -208,111 +363,214 @@
                     description: document.getElementById('ad-desc').value,
                     imageUrl: imageUrl,
                     sellerId: currentUser.uid,
-                    sellerName: currentUser.displayName,
                     createdAt: serverTimestamp()
                 });
 
-                createModal.style.display = 'none';
-                createForm.reset();
-                loadListings(); // Перезагружаем ленту
-            } catch (error) {
-                alert("Ошибка публикации: " + error.message);
+                document.getElementById('create-modal').style.display = 'none';
+                document.getElementById('create-form').reset();
+                loadListings('home');
+            } catch (err) {
+                alert("Ошибка: " + err.message);
             } finally {
-                submitBtn.innerText = "Опубликовать";
-                submitBtn.disabled = false;
+                btn.innerText = "Опубликовать объявление";
+                btn.disabled = false;
             }
-        });
+        };
 
-        // Загрузка объявлений
-        async function loadListings() {
-            listingsGrid.innerHTML = 'Загрузка...';
-            const querySnapshot = await getDocs(collection(db, "listings"));
-            listingsGrid.innerHTML = '';
+        async function loadListings(tab) {
+            const gridId = tab === 'home' ? 'listings-grid' : 'my-listings-grid';
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center;">Загрузка...</div>';
             
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (currentCategory !== 'Все' && data.category !== currentCategory) return;
+            const qSnap = await getDocs(collection(db, "listings"));
+            grid.innerHTML = '';
+            
+            let count = 0;
+            // Используем for...of для безопасного await внутри цикла
+            for (const documentSnap of qSnap.docs) {
+                const data = documentSnap.data();
+                
+                // Фильтрация
+                if (tab === 'home' && currentCategory !== 'Все' && data.category !== currentCategory) continue;
+                if (tab === 'profile' && data.sellerId !== currentUser?.uid) continue;
+
+                // Получаем актуальные данные продавца (чтобы если он сменил ник/аву - они обновились)
+                let sellerInfo = { displayName: "Игрок", photoURL: "https://i.ibb.co/4pDNDk1/avatar.png" };
+                const sellerDoc = await getDoc(doc(db, "users", data.sellerId));
+                if (sellerDoc.exists()) sellerInfo = sellerDoc.data();
+
+                count++;
+                const isMyAd = currentUser && currentUser.uid === data.sellerId;
 
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
-                    <img src="${data.imageUrl}" alt="${data.title}">
+                    <img src="${data.imageUrl}">
                     <div class="card-content">
-                        <h3>${data.title}</h3>
-                        <p style="color: #666; font-size: 14px;">${data.category}</p>
+                        <div class="card-cat">${data.category}</div>
+                        <div class="card-title">${data.title}</div>
                         <div class="card-price">${data.price} ₽</div>
-                        <p style="font-size: 14px; margin-bottom: 15px;">${data.description}</p>
-                        <button class="card-btn" onclick="window.openChat('${data.sellerId}', '${doc.id}')">Написать продавцу</button>
+                        
+                        <div class="card-seller">
+                            <img src="${sellerInfo.photoURL}">
+                            <span>${sellerInfo.displayName}</span>
+                        </div>
+                        
+                        ${!isMyAd ? `<button class="btn card-btn" onclick="window.initiateChat('${data.sellerId}', '${documentSnap.id}', '${data.title}', '${sellerInfo.displayName}', '${sellerInfo.photoURL}')">Написать продавцу</button>` : `<button class="btn btn-outline card-btn" disabled>Ваше объявление</button>`}
                     </div>
                 `;
-                listingsGrid.appendChild(card);
+                grid.appendChild(card);
+            }
+
+            if (count === 0) grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color: var(--text-muted);">Объявлений пока нет.</div>';
+        }
+
+        // --- ЛОГИКА МЕССЕНДЖЕРА ---
+
+        // 1. Кнопка "Написать продавцу"
+        window.initiateChat = async (sellerId, listingId, listingTitle, sellerName, sellerAvatar) => {
+            if (!currentUser) return alert("Необходимо войти в аккаунт!");
+            
+            const chatId = `${listingId}_${currentUser.uid}_${sellerId}`;
+            
+            // Создаем/обновляем документ чата (храним инфу о товаре и участниках для списка)
+            const chatRef = doc(db, "chats", chatId);
+            await setDoc(chatRef, {
+                chatId: chatId,
+                listingId: listingId,
+                listingTitle: listingTitle,
+                participants: [currentUser.uid, sellerId],
+                // Сохраняем базовую инфу для быстрого рендера списка у обоих
+                usersInfo: {
+                    [currentUser.uid]: { name: userData.displayName, avatar: userData.photoURL },
+                    [sellerId]: { name: sellerName, avatar: sellerAvatar }
+                },
+                updatedAt: serverTimestamp()
+            }, { merge: true });
+
+            switchView('chats');
+            openChatWindow(chatId, sellerId, sellerName, sellerAvatar, listingTitle);
+        };
+
+        // 2. Загрузка списка чатов (левая панель)
+        function initChatListListener() {
+            const chatsRef = collection(db, "chats");
+            // Простой запрос, затем фильтрация на клиенте (чтобы не требовать сложных индексов Firestore)
+            unsubscribeChatList = onSnapshot(chatsRef, (snapshot) => {
+                const listEl = document.getElementById('chat-list');
+                listEl.innerHTML = '';
+                
+                let chatsArr = [];
+                snapshot.forEach(d => {
+                    const data = d.data();
+                    if(data.participants && data.participants.includes(currentUser.uid)) {
+                        chatsArr.push(data);
+                    }
+                });
+
+                // Сортируем локально по дате обновления
+                chatsArr.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
+
+                if (chatsArr.length === 0) {
+                    listEl.innerHTML = '<div style="padding:20px; text-align:center; color:gray;">Нет активных диалогов</div>';
+                    return;
+                }
+
+                chatsArr.forEach(data => {
+                    // Находим ID собеседника
+                    const otherUserId = data.participants.find(id => id !== currentUser.uid);
+                    const otherUserInfo = data.usersInfo[otherUserId] || { name: "Пользователь", avatar: "https://i.ibb.co/4pDNDk1/avatar.png" };
+                    
+                    const item = document.createElement('div');
+                    item.className = `chat-item ${activeChatId === data.chatId ? 'active' : ''}`;
+                    item.onclick = () => openChatWindow(data.chatId, otherUserId, otherUserInfo.name, otherUserInfo.avatar, data.listingTitle);
+                    
+                    item.innerHTML = `
+                        <img src="${otherUserInfo.avatar}">
+                        <div class="chat-item-info">
+                            <div class="chat-item-name">${otherUserInfo.name}</div>
+                            <div class="chat-item-ad">${data.listingTitle}</div>
+                        </div>
+                    `;
+                    listEl.appendChild(item);
+                });
             });
         }
 
-        // --- ЛОГИКА ЧАТА ---
-        window.openChat = async (sellerId, listingId) => {
-            if (!currentUser) {
-                alert("Сначала войдите в систему (нажмите 'Загрузить объявление')");
-                return;
-            }
-            if (currentUser.uid === sellerId) {
-                alert("Это ваше объявление!");
-                return;
-            }
-
-            // Генерируем уникальный ID чата для этой пары пользователей и объявления
-            activeChatId = `${listingId}_${[currentUser.uid, sellerId].sort().join('_')}`;
-            chatModal.style.display = 'flex';
-            chatMessages.innerHTML = '';
-
-            // Подписка на сообщения в реальном времени
-            const q = query(collection(db, "messages"), where("chatId", "==", activeChatId), orderBy("createdAt", "asc"));
+        // 3. Открытие конкретного чата (правая панель)
+        function openChatWindow(chatId, otherId, otherName, otherAvatar, listingTitle) {
+            activeChatId = chatId;
+            document.getElementById('chat-placeholder').style.display = 'none';
+            document.getElementById('chat-window').style.display = 'flex';
             
-            unsubscribeChat = onSnapshot(q, (snapshot) => {
+            // Обновляем шапку
+            document.getElementById('chat-header-avatar').src = otherAvatar;
+            document.getElementById('chat-header-name').innerText = otherName;
+            document.getElementById('chat-header-ad').innerText = `По поводу: ${listingTitle}`;
+
+            // Подсветка в списке
+            document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+
+            // Отписываемся от старого чата
+            if (unsubscribeActiveChat) unsubscribeActiveChat();
+
+            const msgContainer = document.getElementById('chat-messages');
+            msgContainer.innerHTML = '';
+
+            const q = query(collection(db, "messages"), where("chatId", "==", chatId), orderBy("createdAt", "asc"));
+            
+            unsubscribeActiveChat = onSnapshot(q, (snapshot) => {
                 snapshot.docChanges().forEach((change) => {
                     if (change.type === "added") {
                         const msgData = change.doc.data();
-                        
-                        // Создаем элемент сообщения
-                        const msgEl = document.createElement('div');
                         const isMe = msgData.senderId === currentUser.uid;
+                        
+                        const msgEl = document.createElement('div');
                         msgEl.className = `msg ${isMe ? 'me' : 'other'}`;
                         msgEl.innerText = msgData.text;
-                        chatMessages.appendChild(msgEl);
-                        chatMessages.scrollTop = chatMessages.scrollHeight; // Скролл вниз
+                        msgContainer.appendChild(msgEl);
+                        
+                        // Скролл вниз
+                        msgContainer.scrollTop = msgContainer.scrollHeight;
 
-                        // Воспроизводим звук, если сообщение прислал НЕ я
+                        // Звук (только для входящих, если мы не отправители)
                         if (!isMe && !change.doc.metadata.hasPendingWrites) {
-                            notifySound.play().catch(e => console.log("Автоплей звука заблокирован браузером", e));
+                            document.getElementById('notify-sound').play().catch(e=>console.log("Audio block", e));
                         }
                     }
                 });
             });
-        };
+        }
 
-        // Отправка сообщения
-        sendMsgBtn.addEventListener('click', async () => {
-            const text = chatInput.value.trim();
+        // 4. Отправка сообщений
+        document.getElementById('send-msg-btn').onclick = async () => {
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
             if (!text || !activeChatId) return;
 
-            chatInput.value = ''; // Очищаем поле сразу
+            input.value = '';
             
+            // Сохраняем сообщение
             await addDoc(collection(db, "messages"), {
                 chatId: activeChatId,
                 text: text,
                 senderId: currentUser.uid,
                 createdAt: serverTimestamp()
             });
-        });
 
-        // Отправка по Enter
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMsgBtn.click();
-        });
+            // Обновляем время последнего сообщения в чате для сортировки списка
+            await updateDoc(doc(db, "chats", activeChatId), {
+                updatedAt: serverTimestamp()
+            });
+        };
 
-        // Инициализация при старте
+        document.getElementById('msg-input').onkeypress = (e) => {
+            if (e.key === 'Enter') document.getElementById('send-msg-btn').click();
+        };
+
+        // Запуск UI
         renderCategories();
-        loadListings();
+        
     </script>
 </body>
 </html>
