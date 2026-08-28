@@ -8,40 +8,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* Стили для онлайн-индикатора и анимации +1 */
-  .online-pill {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--text-dim);
-    border-color: rgba(241,237,224,0.15);
-  }
-  .online-dot {
-    width: 6px;
-    height: 6px;
-    background-color: #2ecc71;
-    border-radius: 50%;
-    box-shadow: 0 0 8px #2ecc71;
-  }
-  .online-pill span { color: var(--text); font-weight: 500; }
-
-  @keyframes pulsePlus {
-    0% { transform: translateY(0) scale(1); opacity: 1; color: #2ecc71; }
-    100% { transform: translateY(-20px) scale(1.2); opacity: 0; color: #2ecc71; }
-  }
-  .plus-one-anim {
-    position: absolute;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    font-weight: bold;
-    pointer-events: none;
-    animation: pulsePlus 1s ease forwards;
-  }
-  .view-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
   :root{
     --bg: #0a0b08;
     --panel: #131510;
@@ -421,24 +387,17 @@
     <span>Пантера</span>
   </div>
   <div class="header-info">
-    <div class="view-container">
-      <div class="count-pill view-pill" title="Реальные просмотры">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-          <circle cx="12" cy="12" r="3"></circle>
-        </svg>
-        <span id="viewCounter">...</span>
-      </div>
-      <div id="plusOneContainer"></div>
+    <div class="count-pill view-pill" title="Реальные просмотры">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      <span id="viewCounter">...</span>
     </div>
-
-    <div class="count-pill online-pill" title="Сейчас на сайте">
-      <div class="online-dot"></div>
-      <span id="onlineCounter">1</span>
-    </div>
-
     <div class="count-pill">04 / видео</div>
   </div>
+</header>
+
 <section class="hero">
   <div class="eyebrow">Полная подборка</div>
   <h1>Пантера<br><em>Уфф</em></h1>
@@ -526,14 +485,13 @@
 
   // ВАЖНО: Вставь сюда настройки своего Firebase проекта!
   const firebaseConfig = {
-    apiKey: "AIzaSyApnoSkcthpVPcMSAJXL-PFT-UpEi9ZdoI",
-  authDomain: "exaroton-65e4e.firebaseapp.com",
-  databaseURL: "https://exaroton-65e4e-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "exaroton-65e4e",
-  storageBucket: "exaroton-65e4e.firebasestorage.app",
-  messagingSenderId: "175992933890",
-  appId: "1:175992933890:web:5196918da3f79520e5211b",
-  measurementId: "G-V8RF5D60MH"
+    apiKey: "ТВОЙ_API_KEY",
+    authDomain: "ТВОЙ_ПРОЕКТ.firebaseapp.com",
+    databaseURL: "https://ТВОЙ_ПРОЕКТ-default-rtdb.firebaseio.com",
+    projectId: "ТВОЙ_ПРОЕКТ",
+    storageBucket: "ТВОЙ_ПРОЕКТ.appspot.com",
+    messagingSenderId: "ТВОЙ_SENDER_ID",
+    appId: "ТВОЙ_APP_ID"
   };
 
   try {
