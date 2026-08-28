@@ -46,27 +46,16 @@
     mix-blend-mode: overlay;
   }
 
-  <header>
-  <div class="mark">
-    <svg viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="11" stroke="#c9a227" stroke-width="1"/>
-      <circle cx="9" cy="10.5" r="1.2" fill="#c9a227"/>
-      <circle cx="15" cy="10.5" r="1.2" fill="#c9a227"/>
-      <path d="M8 15c1.2 1 2.6 1.5 4 1.5s2.8-.5 4-1.5" stroke="#c9a227" stroke-width="1" stroke-linecap="round"/>
-    </svg>
-    <span>Пантера</span>
-  </div>
-  <div class="header-info">
-    <div class="count-pill view-pill">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>
-      <span id="viewCounter">...</span>
-    </div>
-    <div class="count-pill">04 / видео</div>
-  </div>
-</header>
+  header{
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    background: linear-gradient(to bottom, rgba(10,11,8,0.92), rgba(10,11,8,0.7) 70%, transparent);
+    backdrop-filter: blur(6px);
   }
   .mark{ display:flex; align-items:center; gap:10px; }
   .mark svg{ width:22px; height:22px; flex-shrink:0; }
@@ -77,6 +66,12 @@
     text-transform: uppercase;
     font-weight: 500;
   }
+  
+  .header-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
   .count-pill{
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
@@ -86,6 +81,15 @@
     border-radius: 100px;
     padding: 5px 11px;
   }
+  .view-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-dim);
+    border-color: rgba(241,237,224,0.15);
+  }
+  .view-pill svg { opacity: 0.7; }
+  .view-pill span { color: var(--text); font-weight: 500; }
 
   .hero{ position: relative; padding: 8px 20px 28px; z-index: 2; }
   .hero .eyebrow{
@@ -269,7 +273,16 @@
     </svg>
     <span>Пантера</span>
   </div>
-  <div class="count-pill">04 / видео</div>
+  <div class="header-info">
+    <div class="count-pill view-pill" title="Просмотры">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      <span id="viewCounter">...</span>
+    </div>
+    <div class="count-pill">04 / видео</div>
+  </div>
 </header>
 
 <section class="hero">
@@ -338,5 +351,23 @@
   <span class="gold">Пантера</span> · ночная коллекция · 2026
 </footer>
 
+<script>
+  // Простая имитация глобального счетчика для визуального эффекта
+  document.addEventListener("DOMContentLoaded", () => {
+    const counterEl = document.getElementById('viewCounter');
+    
+    // Берем стартовое значение из локального хранилища или генерируем случайное
+    let currentViews = parseInt(localStorage.getItem('pantherViews')) || (Math.floor(Math.random() * 4000) + 1000);
+    
+    // Добавляем от 1 до 5 просмотров, имитируя активность
+    currentViews += Math.floor(Math.random() * 5) + 1;
+    
+    // Сохраняем новое значение
+    localStorage.setItem('pantherViews', currentViews);
+    
+    // Выводим с пробелами между тысячами (например: 1 245)
+    counterEl.textContent = currentViews.toLocaleString('ru-RU');
+  });
+</script>
 </body>
 </html>
