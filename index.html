@@ -46,16 +46,27 @@
     mix-blend-mode: overlay;
   }
 
-  header{
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 20px;
-    background: linear-gradient(to bottom, rgba(10,11,8,0.92), rgba(10,11,8,0.7) 70%, transparent);
-    backdrop-filter: blur(6px);
+  <header>
+  <div class="mark">
+    <svg viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="11" stroke="#c9a227" stroke-width="1"/>
+      <circle cx="9" cy="10.5" r="1.2" fill="#c9a227"/>
+      <circle cx="15" cy="10.5" r="1.2" fill="#c9a227"/>
+      <path d="M8 15c1.2 1 2.6 1.5 4 1.5s2.8-.5 4-1.5" stroke="#c9a227" stroke-width="1" stroke-linecap="round"/>
+    </svg>
+    <span>Пантера</span>
+  </div>
+  <div class="header-info">
+    <div class="count-pill view-pill">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      <span id="viewCounter">...</span>
+    </div>
+    <div class="count-pill">04 / видео</div>
+  </div>
+</header>
   }
   .mark{ display:flex; align-items:center; gap:10px; }
   .mark svg{ width:22px; height:22px; flex-shrink:0; }
