@@ -191,6 +191,59 @@
     border-top: 1px solid var(--line);
   }
   footer .gold{ color: var(--gold-dim); }
+
+  /* ---------- desktop ---------- */
+  @media (min-width: 900px){
+    header{ padding: 26px 56px; }
+    .mark svg{ width:26px; height:26px; }
+    .mark span{ font-size: 19px; }
+
+    .hero{
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 40px 56px 56px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      align-items: end;
+      column-gap: 60px;
+    }
+    .hero .eyebrow{ margin-top: 0; }
+    .hero h1{ font-size: clamp(64px, 6vw, 96px); }
+    .hero p{ max-width: 34ch; font-size: 15px; }
+    .hero .claw{ grid-column: 1; margin-top: 26px; }
+
+    main{
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 44px 32px;
+      padding: 8px 56px 120px;
+    }
+    .card{ padding: 0; }
+    .card.featured{
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+    .card.featured .frame{ height: 100%; }
+    .card.featured video{ height: 100%; aspect-ratio: auto; }
+
+    .frame{ transition: transform .35s ease, box-shadow .35s ease; }
+    .frame:hover{
+      transform: translateY(-4px);
+      box-shadow: 0 40px 80px -30px rgba(0,0,0,0.8), 0 0 0 1px rgba(201,162,39,0.25);
+    }
+    .frame:hover::before{ opacity: 1; }
+
+    .card .name{ font-size: 20px; }
+
+    footer{ padding: 44px 56px 64px; }
+  }
+
+  @media (min-width: 1280px){
+    main{ max-width: 1400px; }
+    .hero{ max-width: 1400px; }
+  }
 </style>
 </head>
 <body>
