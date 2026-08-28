@@ -3,459 +3,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Claim Check — прямые ссылки на фото</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Пантера Уфф — видео</title>
 <style>
   :root{
-    --counter: #14110d;
-    --counter-2: #1c1812;
-    --paper: #efe4cc;
-    --paper-2: #e6d8ba;
-    --ink: #2b2318;
-    --ink-soft: #6b5f4a;
-    --brass: #b0813f;
-    --brass-bright: #d4a256;
-    --stamp: #9c3324;
-    --line: #b7a67f;
+    --bg: #0e0f0c;
+    --bg-panel: #161810;
+    --accent: #9fd13c;
+    --text: #eef0e6;
+    --text-dim: #9a9d8f;
+    --line: #2a2d22;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{
-    margin:0; padding:0; min-height:100vh;
-    background: var(--counter);
-    background-image:
-      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(176,129,63,0.10), transparent 60%),
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
-    color: var(--paper);
-    font-family: 'IBM Plex Mono', monospace;
-    display:flex; align-items:center; justify-content:center;
-    padding: 40px 16px;
+  * { box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Georgia', 'Times New Roman', serif;
+    padding: 0 0 80px;
   }
-
-  .stage{
-    width:100%; max-width: 460px;
-    display:flex; flex-direction:column; align-items:center;
+  header{
+    padding: 64px 24px 32px;
+    text-align:center;
+    border-bottom: 1px solid var(--line);
   }
-
-  .overhead{
-    font-size:10.5px; letter-spacing:3px; color:var(--brass-bright);
-    text-transform:uppercase; margin-bottom:14px; opacity:0.85;
-    display:flex; align-items:center; gap:10px;
+  header .eyebrow{
+    font-family: 'Courier New', monospace;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 12px;
   }
-  .overhead .bulb{
-    width:6px; height:6px; border-radius:50%; background:var(--brass-bright);
-    box-shadow:0 0 8px 2px rgba(212,162,86,0.7);
+  header h1{
+    font-size: clamp(36px, 7vw, 64px);
+    margin: 0;
+    font-weight: 400;
+    letter-spacing: -0.02em;
   }
-  .overhead .bulb.dim{ background:#5a4c33; box-shadow:none; }
-
-  /* ===== TICKET ===== */
-  .ticket{
-    position:relative;
-    width:100%;
-    background: var(--paper);
-    background-image: linear-gradient(180deg, var(--paper), var(--paper-2));
-    color: var(--ink);
-    border-radius: 3px;
-    box-shadow:
-      0 30px 60px -20px rgba(0,0,0,0.55),
-      0 2px 0 rgba(255,255,255,0.08) inset;
-    padding: 30px 30px 26px 44px;
+  header p{
+    color: var(--text-dim);
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    margin-top: 12px;
+  }
+  main{
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 48px 24px 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  @media (min-width: 760px){
+    main{ grid-template-columns: 1fr 1fr; }
+  }
+  .card{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
     overflow: hidden;
   }
-  .holes{
-    position:absolute; left:0; top:0; bottom:0; width:22px;
-    display:flex; flex-direction:column; justify-content:space-evenly;
-    align-items:center; padding: 18px 0;
+  .card .label{
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 14px 16px 0;
   }
-  .holes span{
-    width:9px; height:9px; border-radius:50%;
-    background: var(--counter);
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.6), 1px 0 0 rgba(255,255,255,0.05);
-    flex-shrink:0;
+  .card .name{
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    color: var(--text-dim);
+    padding: 4px 16px 14px;
   }
-
-  .head{
-    display:flex; justify-content:space-between; align-items:flex-start;
-    margin-bottom: 18px;
-  }
-  .head h1{
-    font-family:'Fraunces', serif; font-weight:600; font-size:26px;
-    margin:0; letter-spacing:-0.2px; line-height:1;
-  }
-  .head p{
-    margin:6px 0 0 0; font-size:11px; color:var(--ink-soft); letter-spacing:0.3px;
-  }
-  .serial{
-    text-align:right; font-family:'Space Mono', monospace; font-size:10px;
-    color:var(--ink-soft); line-height:1.6; white-space:nowrap;
-  }
-  .serial b{ color:var(--ink); font-size:12px; letter-spacing:1px; }
-
-  .dashed{
-    border-top: 2px dashed var(--line);
-    margin: 18px 0;
-    position:relative;
-  }
-  .dashed::before, .dashed::after{
-    content:''; position:absolute; top:-9px; width:18px; height:18px;
-    border-radius:50%; background: var(--counter);
-  }
-  .dashed::before{ left:-30px; }
-  .dashed::after{ right:-30px; }
-
-  /* ===== DROPZONE / COUNTER ===== */
-  .counter-slot{
-    position:relative;
-    border: 1.5px solid rgba(43,35,24,0.18);
-    border-radius: 4px;
-    min-height: 150px;
-    display:flex; align-items:center; justify-content:center;
-    text-align:center;
-    cursor:pointer;
-    transition: border-color 0.2s, background 0.2s;
-    background: rgba(43,35,24,0.02);
-    padding: 16px;
-    overflow:hidden;
-  }
-  .counter-slot.drag{
-    border-color: var(--brass); background: rgba(176,129,63,0.08);
-  }
-  .counter-slot input{ display:none; }
-  .placeholder{
-    color: var(--ink-soft);
-  }
-  .placeholder .icon{
-    font-size:22px; display:block; margin-bottom:8px;
-  }
-  .placeholder .t1{ font-size:12.5px; color:var(--ink); font-weight:500; }
-  .placeholder .t2{ font-size:10.5px; margin-top:4px; opacity:0.8; }
-
-  .photo-wrap{
-    position:relative; width:100%; height:100%; min-height:150px;
-    display:none;
-  }
-  .photo-wrap.show{ display:block; }
-  .photo-wrap img{
-    width:100%; height:150px; object-fit:cover; border-radius:2px; display:block;
-    filter: grayscale(1) blur(6px) brightness(1.5) contrast(0.8);
-    transition: filter 1.4s cubic-bezier(.2,.7,.3,1);
-  }
-  .photo-wrap img.developed{
-    filter: grayscale(0) blur(0) brightness(1) contrast(1);
-  }
-  .scan{
-    position:absolute; left:0; right:0; top:0; height:2px;
-    background: linear-gradient(90deg, transparent, var(--brass-bright), transparent);
-    opacity:0; pointer-events:none;
-  }
-  .scan.run{
-    animation: scan 1.4s ease-in-out;
-  }
-  @keyframes scan{
-    0%{ top:0%; opacity:0; }
-    10%{ opacity:1; }
-    90%{ opacity:1; }
-    100%{ top:100%; opacity:0; }
-  }
-
-  .stamp{
-    position:absolute; top:8px; right:8px;
-    border:2.5px solid var(--stamp); color:var(--stamp);
-    font-family:'Space Mono', monospace; font-weight:700; font-size:10px;
-    letter-spacing:1.5px; padding:4px 8px; border-radius:3px;
-    transform: rotate(-9deg) scale(0);
-    opacity:0;
-    background: rgba(239,228,204,0.85);
-    pointer-events:none;
-  }
-  .stamp.hit{
-    animation: stampHit 0.4s cubic-bezier(.3,1.6,.4,1) 0.9s forwards;
-  }
-  @keyframes stampHit{
-    0%{ transform:rotate(-9deg) scale(2.2); opacity:0; }
-    60%{ transform:rotate(-9deg) scale(0.9); opacity:1; }
-    100%{ transform:rotate(-9deg) scale(1); opacity:1; }
-  }
-
-  /* ===== ACTION ===== */
-  .action-row{
-    margin-top:18px; display:flex; gap:10px;
-  }
-  .btn-process{
-    flex:1;
-    background: var(--ink); color: var(--paper);
-    border:none; border-radius:4px; padding:12px 16px;
-    font-family:'Space Mono', monospace; font-weight:700; font-size:12.5px;
-    letter-spacing:1.5px; text-transform:uppercase;
-    cursor:pointer; transition: background 0.15s, transform 0.1s;
-  }
-  .btn-process:hover{ background:#3d3122; }
-  .btn-process:active{ transform: scale(0.98); }
-  .btn-process:disabled{ opacity:0.45; cursor:default; }
-
-  .gear{
-    width:42px; flex-shrink:0;
-    border:1.5px solid rgba(43,35,24,0.25); background:transparent;
-    border-radius:4px; color:var(--ink-soft); cursor:pointer; font-size:15px;
-  }
-  .gear:hover{ color:var(--ink); border-color: var(--ink-soft); }
-
-  .key-row{
-    max-height:0; overflow:hidden; transition: max-height 0.25s ease, margin 0.25s ease;
-    margin-top:0;
-  }
-  .key-row.open{ max-height:70px; margin-top:12px; }
-  .key-row label{
-    display:block; font-size:9.5px; color:var(--ink-soft); text-transform:uppercase;
-    letter-spacing:1px; margin-bottom:5px;
-  }
-  .key-row input{
-    width:100%; background:rgba(255,255,255,0.4); border:1px solid rgba(43,35,24,0.2);
-    border-radius:4px; padding:8px 10px; font-family:'Space Mono',monospace; font-size:11px;
-    color:var(--ink); outline:none;
-  }
-  .key-row input:focus{ border-color: var(--brass); }
-
-  /* ===== TICKET RESULT STUB ===== */
-  .stub{
-    display:none; margin-top:0;
-  }
-  .stub.show{ display:block; }
-  .field{
-    margin-bottom:12px;
-  }
-  .field label{
-    display:block; font-size:9px; text-transform:uppercase; letter-spacing:1.5px;
-    color:var(--ink-soft); margin-bottom:5px;
-  }
-  .link-line{
-    display:flex; gap:8px; align-items:center;
-  }
-  .link-line input{
-    flex:1; min-width:0;
-    background:transparent; border:none; border-bottom:1.5px dotted var(--line);
-    font-family:'Space Mono', monospace; font-size:12px; color:var(--ink);
-    padding:4px 2px; outline:none;
-  }
-  .copy-btn{
-    background:transparent; border:1.5px solid var(--ink); color:var(--ink);
-    border-radius:3px; padding:6px 12px; font-family:'Space Mono',monospace;
-    font-size:10.5px; font-weight:700; letter-spacing:1px; cursor:pointer;
-    white-space:nowrap; transition: background 0.15s, color 0.15s;
-  }
-  .copy-btn:hover{ background:var(--ink); color:var(--paper); }
-  .copy-btn.done{ background:var(--brass); color:var(--paper); border-color:var(--brass); }
-
-  .status-line{
-    font-size:10.5px; color:var(--ink-soft); margin-top:14px; min-height:14px;
-    display:flex; align-items:center; gap:6px;
-  }
-  .status-line.err{ color: var(--stamp); }
-  .status-line .spinner{
-    width:9px; height:9px; border-radius:50%; border:1.5px solid var(--ink-soft);
-    border-top-color:transparent; animation: spin 0.7s linear infinite; display:none;
-  }
-  .status-line.loading .spinner{ display:inline-block; }
-  @keyframes spin{ to{ transform:rotate(360deg); } }
-
-  .foot{
-    margin-top:24px; font-size:10px; color: #6a5f4c; text-align:center; line-height:1.7;
-    max-width:360px;
+  video{
+    width: 100%;
+    display: block;
+    background: #000;
+    aspect-ratio: 9/16;
+    object-fit: cover;
   }
 </style>
 </head>
 <body>
-<div class="stage">
 
-  <div class="overhead"><span class="bulb" id="bulb"></span> counter · always open</div>
+<header>
+  <div class="eyebrow">Видеотека</div>
+  <h1>Пантера Уфф</h1>
+  <p>Полная подборка — 4 видео</p>
+</header>
 
-  <div class="ticket">
-    <div class="holes" id="holes"></div>
-
-    <div class="head">
-      <div>
-        <h1>Claim&nbsp;Check</h1>
-        <p>сдайте фото — заберите ссылку</p>
-      </div>
-      <div class="serial">
-        NO.<br><b id="serialNum">000000</b>
-      </div>
-    </div>
-
-    <div class="dashed"></div>
-
-    <div class="counter-slot" id="drop">
-      <input type="file" id="fileInput" accept="image/*">
-      <div class="placeholder" id="placeholder">
-        <span class="icon">◆</span>
-        <div class="t1">положите фото на стойку</div>
-        <div class="t2">или нажмите, чтобы выбрать файл</div>
-      </div>
-      <div class="photo-wrap" id="photoWrap">
-        <img id="previewImg" alt="фото">
-        <div class="scan" id="scan"></div>
-        <div class="stamp" id="stamp">DEVELOPED</div>
-      </div>
-    </div>
-
-    <div class="action-row">
-      <button class="btn-process" id="processBtn" disabled>Process</button>
-      <button class="gear" id="gearBtn" title="настройки">⚙</button>
-    </div>
-
-    <div class="key-row" id="keyRow">
-      <label>ImgBB API key</label>
-      <input type="text" id="apiKey" value="91baa56297963d72b88d39e4aee75835" autocomplete="off" spellcheck="false">
-    </div>
-
-    <div class="status-line" id="statusLine"><span class="spinner"></span><span id="statusText"></span></div>
-
-    <div class="stub" id="stub">
-      <div class="dashed"></div>
-      <div class="field">
-        <label>Claim link</label>
-        <div class="link-line">
-          <input type="text" id="linkOut" readonly>
-          <button class="copy-btn" id="copyBtn">copy</button>
-        </div>
-      </div>
-    </div>
+<main>
+  <div class="card">
+    <div class="label">01</div>
+    <div class="name">Пантера Уфф</div>
+    <video controls preload="metadata">
+      <source src="https://ddjauef2hwzqfvdm.public.blob.vercel-storage.com/WhatsApp%20Video%202026-08-28%20at%2023.05.40%20%281%29.mp4" type="video/mp4">
+    </video>
   </div>
 
-  <p class="foot">Загрузка идёт напрямую в ваш аккаунт ImgBB из браузера.<br>Ключ API нигде не сохраняется на стороне сервера — только у вас.</p>
-</div>
+  <div class="card">
+    <div class="label">02</div>
+    <div class="name">Пантера Уфф</div>
+    <video controls preload="metadata">
+      <source src="https://ddjauef2hwzqfvdm.public.blob.vercel-storage.com/WhatsApp%20Video%202026-08-28%20at%2023.05.40.mp4" type="video/mp4">
+    </video>
+  </div>
 
-<script>
-  const drop = document.getElementById('drop');
-  const fileInput = document.getElementById('fileInput');
-  const placeholder = document.getElementById('placeholder');
-  const photoWrap = document.getElementById('photoWrap');
-  const previewImg = document.getElementById('previewImg');
-  const scan = document.getElementById('scan');
-  const stamp = document.getElementById('stamp');
-  const processBtn = document.getElementById('processBtn');
-  const gearBtn = document.getElementById('gearBtn');
-  const keyRow = document.getElementById('keyRow');
-  const apiKeyInput = document.getElementById('apiKey');
-  const statusLine = document.getElementById('statusLine');
-  const statusText = document.getElementById('statusText');
-  const stub = document.getElementById('stub');
-  const linkOut = document.getElementById('linkOut');
-  const copyBtn = document.getElementById('copyBtn');
-  const serialNum = document.getElementById('serialNum');
-  const bulb = document.getElementById('bulb');
-  const holesWrap = document.getElementById('holes');
+  <div class="card">
+    <div class="label">03</div>
+    <div class="name">Пантера Уфф</div>
+    <video controls preload="metadata">
+      <source src="https://ddjauef2hwzqfvdm.public.blob.vercel-storage.com/WhatsApp%20Video%202026-08-28%20at%2023.05.50.mp4" type="video/mp4">
+    </video>
+  </div>
 
-  let currentFile = null;
+  <div class="card">
+    <div class="label">04</div>
+    <div class="name">Пантера Уфф</div>
+    <video controls preload="metadata">
+      <source src="https://ddjauef2hwzqfvdm.public.blob.vercel-storage.com/WhatsApp%20Video%202026-08-28%20at%2023.06.08.mp4" type="video/mp4">
+    </video>
+  </div>
+</main>
 
-  // decorative perforation holes
-  for(let i=0;i<9;i++){
-    const h = document.createElement('span');
-    holesWrap.appendChild(h);
-  }
-
-  serialNum.textContent = String(Math.floor(100000 + Math.random()*899999));
-
-  function setStatus(text, mode){
-    statusText.textContent = text || '';
-    statusLine.classList.remove('err','loading');
-    if(mode) statusLine.classList.add(mode);
-  }
-
-  gearBtn.addEventListener('click', () => keyRow.classList.toggle('open'));
-
-  drop.addEventListener('click', (e) => { if(e.target === drop || e.target === placeholder || placeholder.contains(e.target)) fileInput.click(); });
-  drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag'); });
-  drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
-  drop.addEventListener('drop', (e) => {
-    e.preventDefault();
-    drop.classList.remove('drag');
-    if(e.dataTransfer.files.length) selectFile(e.dataTransfer.files[0]);
-  });
-  fileInput.addEventListener('change', (e) => {
-    if(e.target.files.length) selectFile(e.target.files[0]);
-  });
-
-  function selectFile(file){
-    if(!file.type.startsWith('image/')){
-      setStatus('это не похоже на изображение', 'err');
-      return;
-    }
-    currentFile = file;
-    stub.classList.remove('show');
-    setStatus('');
-
-    const url = URL.createObjectURL(file);
-    previewImg.src = url;
-    previewImg.classList.remove('developed');
-    placeholder.style.display = 'none';
-    photoWrap.classList.add('show');
-    stamp.classList.remove('hit');
-    processBtn.disabled = false;
-    bulb.classList.add('dim');
-  }
-
-  processBtn.addEventListener('click', async () => {
-    if(!currentFile) return;
-    const apiKey = apiKeyInput.value.trim();
-    if(!apiKey){
-      setStatus('нужен API-ключ ImgBB', 'err');
-      keyRow.classList.add('open');
-      return;
-    }
-
-    processBtn.disabled = true;
-    setStatus('проявляется…', 'loading');
-    statusLine.classList.add('loading');
-    scan.classList.add('run');
-
-    const developTimer = setTimeout(() => {
-      previewImg.classList.add('developed');
-      stamp.classList.add('hit');
-    }, 50);
-
-    try{
-      const formData = new FormData();
-      formData.append('image', currentFile);
-
-      const res = await fetch('https://api.imgbb.com/1/upload?key=' + encodeURIComponent(apiKey), {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-
-      if(!res.ok || !data.success){
-        const msg = (data && data.error && data.error.message) ? data.error.message : ('ошибка HTTP ' + res.status);
-        setStatus('не получилось: ' + msg, 'err');
-        processBtn.disabled = false;
-        clearTimeout(developTimer);
-        previewImg.classList.add('developed');
-        return;
-      }
-
-      const link = data.data.url;
-      linkOut.value = link;
-      stub.classList.add('show');
-      setStatus('готово, билет выдан');
-      bulb.classList.remove('dim');
-      processBtn.disabled = false;
-
-    }catch(err){
-      setStatus('сетевая ошибка: ' + err.message, 'err');
-      processBtn.disabled = false;
-      previewImg.classList.add('developed');
-    }
-  });
-
-  copyBtn.addEventListener('click', () => {
-    linkOut.select();
-    navigator.clipboard.writeText(linkOut.value).then(() => {
-      copyBtn.textContent = 'взято ✓';
-      copyBtn.classList.add('done');
-      setTimeout(() => { copyBtn.textContent = 'copy'; copyBtn.classList.remove('done'); }, 1600);
-    });
-  });
-</script>
 </body>
 </html>
