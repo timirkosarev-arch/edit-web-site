@@ -2,131 +2,277 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Пантера Уфф — видео</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Пантера — Уфф</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #0e0f0c;
-    --bg-panel: #161810;
-    --accent: #9fd13c;
-    --text: #eef0e6;
-    --text-dim: #9a9d8f;
-    --line: #2a2d22;
+    --bg: #0a0b08;
+    --panel: #131510;
+    --gold: #c9a227;
+    --gold-dim: #8a7128;
+    --text: #f1ede0;
+    --text-dim: #8f8c7c;
+    --line: rgba(241,237,224,0.09);
   }
-  * { box-sizing: border-box; }
+
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html{ background: var(--bg); }
+
   body{
     margin:0;
-    background: var(--bg);
+    background: radial-gradient(ellipse 120% 60% at 50% 0%, #171911 0%, var(--bg) 55%);
     color: var(--text);
-    font-family: 'Georgia', 'Times New Roman', serif;
-    padding: 0 0 80px;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  body::before{
+    content:"";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.035;
+    background-image: repeating-linear-gradient(115deg, #fff 0 1px, transparent 1px 3px);
+    mix-blend-mode: overlay;
+  }
+
   header{
-    padding: 64px 24px 32px;
-    text-align:center;
-    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    background: linear-gradient(to bottom, rgba(10,11,8,0.92), rgba(10,11,8,0.7) 70%, transparent);
+    backdrop-filter: blur(6px);
   }
-  header .eyebrow{
-    font-family: 'Courier New', monospace;
-    letter-spacing: .3em;
+  .mark{ display:flex; align-items:center; gap:10px; }
+  .mark svg{ width:22px; height:22px; flex-shrink:0; }
+  .mark span{
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    font-size: 12px;
-    color: var(--accent);
-    margin-bottom: 12px;
+    font-weight: 500;
   }
-  header h1{
-    font-size: clamp(36px, 7vw, 64px);
-    margin: 0;
-    font-weight: 400;
-    letter-spacing: -0.02em;
+  .count-pill{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    border-radius: 100px;
+    padding: 5px 11px;
   }
-  header p{
+
+  .hero{ position: relative; padding: 8px 20px 28px; z-index: 2; }
+  .hero .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 18px 0 6px;
+  }
+  .hero h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(42px, 15vw, 58px);
+    line-height: 0.92;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+  .hero h1 em{ font-style: italic; font-weight: 300; color: var(--gold); }
+  .hero p{
     color: var(--text-dim);
-    font-family: Arial, sans-serif;
     font-size: 14px;
-    margin-top: 12px;
+    max-width: 30ch;
+    margin: 0;
+    line-height: 1.5;
   }
+  .claw{ display:block; width: 84px; height: 14px; margin: 22px 0 0; opacity: 0.8; }
+
   main{
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 48px 24px 0;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 40px;
+    position: relative;
+    z-index: 2;
+    padding: 8px 0 90px;
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
   }
-  @media (min-width: 760px){
-    main{ grid-template-columns: 1fr 1fr; }
+
+  .card{ padding: 0 20px; }
+  .card .meta{ display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+  .card .num{
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 26px;
+    color: var(--gold-dim);
+    line-height:1;
   }
-  .card{
-    background: var(--bg-panel);
-    border: 1px solid var(--line);
-    border-radius: 4px;
+  .card .name{ font-family: 'Fraunces', serif; font-size: 19px; letter-spacing: 0.01em; }
+
+  .frame{
+    position: relative;
+    border-radius: 14px;
     overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    box-shadow: 0 30px 60px -30px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,0,0,0.4);
   }
-  .card .label{
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    letter-spacing: .15em;
-    text-transform: uppercase;
-    color: var(--accent);
-    padding: 14px 16px 0;
+  .frame::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    border-radius: inherit;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.55);
   }
-  .card .name{
-    font-family: Arial, sans-serif;
-    font-size: 15px;
-    color: var(--text-dim);
-    padding: 4px 16px 14px;
+  .frame::before{
+    content:"";
+    position: absolute;
+    inset: -40%;
+    background: radial-gradient(circle at 50% 20%, rgba(201,162,39,0.18), transparent 60%);
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .6s ease;
   }
+  .frame:active::before, .frame:focus-within::before{ opacity: 1; }
+
   video{
     width: 100%;
+    aspect-ratio: 9 / 16;
     display: block;
-    background: #000;
-    aspect-ratio: 9/16;
     object-fit: cover;
+    background: #000;
+    position: relative;
+    z-index: 0;
   }
+
+  .card.featured .frame{ border-color: rgba(201,162,39,0.35); }
+  .card.featured video{ aspect-ratio: 9 / 14; }
+  .featured-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--gold);
+    padding: 4px 9px;
+    border-radius: 100px;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+  }
+
+  footer{
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 30px 20px 50px;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    border-top: 1px solid var(--line);
+  }
+  footer .gold{ color: var(--gold-dim); }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="eyebrow">Видеотека</div>
-  <h1>Пантера Уфф</h1>
-  <p>Полная подборка — 4 видео</p>
+  <div class="mark">
+    <svg viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="11" stroke="#c9a227" stroke-width="1"/>
+      <circle cx="9" cy="10.5" r="1.2" fill="#c9a227"/>
+      <circle cx="15" cy="10.5" r="1.2" fill="#c9a227"/>
+      <path d="M8 15c1.2 1 2.6 1.5 4 1.5s2.8-.5 4-1.5" stroke="#c9a227" stroke-width="1" stroke-linecap="round"/>
+    </svg>
+    <span>Пантера</span>
+  </div>
+  <div class="count-pill">04 / видео</div>
 </header>
 
+<section class="hero">
+  <div class="eyebrow">Полная подборка</div>
+  <h1>Пантера<br><em>Уфф</em></h1>
+  <p>Ночная серия. Четыре кадра, снятых на грани тишины и звука.</p>
+  <svg class="claw" viewBox="0 0 84 14" fill="none">
+    <path d="M1 13 L20 1" stroke="#c9a227" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M10 13 L29 1" stroke="#c9a227" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
+    <path d="M19 13 L38 1" stroke="#c9a227" stroke-width="1.4" stroke-linecap="round" opacity="0.45"/>
+  </svg>
+</section>
+
 <main>
-  <div class="card">
-    <div class="label">01</div>
-    <div class="name">Пантера Уфф</div>
-    <video controls preload="metadata">
-      <source src="https://ddjauef2hwzqfvdm.public.blob.vercel-storage.com/WhatsApp%20Video%202026-08-28%20at%2023.05.40%20%281%29.mp4" type="video/mp4">
-    </video>
+  <div class="card featured">
+    <div class="meta">
+      <span class="num">I</span>
+      <span class="name">Пантера Уфф</span>
+    </div>
+    <div class="frame">
+      <span class="featured-tag">Открывает подборку</span>
+      <video controls playsinline preload="metadata">
+        <source src="https://ddjauef2hwzqfvdm.public.blob.vercel-storage.com/WhatsApp%20Video%202026-08-28%20at%2023.05.40%20%281%29.mp4" type="video/mp4">
+      </video>
+    </div>
   </div>
 
   <div class="card">
-    <div class="label">02</div>
-    <div class="name">Пантера Уфф</div>
-    <video controls preload="metadata">
-      <source src="https://ddjauef2hwzqfvdm.public.blob.vercel-storage.com/WhatsApp%20Video%202026-08-28%20at%2023.05.40.mp4" type="video/mp4">
-    </video>
+    <div class="meta">
+      <span class="num">II</span>
+      <span class="name">Пантера Уфф</span>
+    </div>
+    <div class="frame">
+      <video controls playsinline preload="metadata">
+        <source src="https://ddjauef2hwzqfvdm.public.blob.vercel-storage.com/WhatsApp%20Video%202026-08-28%20at%2023.05.40.mp4" type="video/mp4">
+      </video>
+    </div>
   </div>
 
   <div class="card">
-    <div class="label">03</div>
-    <div class="name">Пантера Уфф</div>
-    <video controls preload="metadata">
-      <source src="https://ddjauef2hwzqfvdm.public.blob.vercel-storage.com/WhatsApp%20Video%202026-08-28%20at%2023.05.50.mp4" type="video/mp4">
-    </video>
+    <div class="meta">
+      <span class="num">III</span>
+      <span class="name">Пантера Уфф</span>
+    </div>
+    <div class="frame">
+      <video controls playsinline preload="metadata">
+        <source src="https://ddjauef2hwzqfvdm.public.blob.vercel-storage.com/WhatsApp%20Video%202026-08-28%20at%2023.05.50.mp4" type="video/mp4">
+      </video>
+    </div>
   </div>
 
   <div class="card">
-    <div class="label">04</div>
-    <div class="name">Пантера Уфф</div>
-    <video controls preload="metadata">
-      <source src="https://ddjauef2hwzqfvdm.public.blob.vercel-storage.com/WhatsApp%20Video%202026-08-28%20at%2023.06.08.mp4" type="video/mp4">
-    </video>
+    <div class="meta">
+      <span class="num">IV</span>
+      <span class="name">Пантера Уфф</span>
+    </div>
+    <div class="frame">
+      <video controls playsinline preload="metadata">
+        <source src="https://ddjauef2hwzqfvdm.public.blob.vercel-storage.com/WhatsApp%20Video%202026-08-28%20at%2023.06.08.mp4" type="video/mp4">
+      </video>
+    </div>
   </div>
 </main>
+
+<footer>
+  <span class="gold">Пантера</span> · ночная коллекция · 2026
+</footer>
 
 </body>
 </html>
