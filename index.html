@@ -351,23 +351,48 @@
   <span class="gold">Пантера</span> · ночная коллекция · 2026
 </footer>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const counterEl = document.getElementById('viewCounter');
+<!-- Подключаем Firebase (версия 10) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+  // ВАЖНО: Вставь сюда настройки своего Firebase проекта
+  const firebaseConfig = {
+    apiKey: "AIzaSyApnoSkcthpVPcMSAJXL-PFT-UpEi9ZdoI",
+  authDomain: "exaroton-65e4e.firebaseapp.com",
+  databaseURL: "https://exaroton-65e4e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "exaroton-65e4e",
+  storageBucket: "exaroton-65e4e.firebasestorage.app",
+  messagingSenderId: "175992933890",
+  appId: "1:175992933890:web:5196918da3f79520e5211b",
+  measurementId: "G-V8RF5D60MH"
+  };
+
+  try {
+    // Инициализация
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
     
-    // Используем реальный открытый API для подсчета просмотров страницы.
-    // Параметры 'panther-site' и 'main-page' создают уникальную ячейку в базе API.
-    fetch('https://api.counterapi.dev/v1/panther-site/main-page/up')
-      .then(response => response.json())
-      .then(data => {
-        // Форматируем число (например: 1 245)
-        counterEl.textContent = data.count.toLocaleString('ru-RU');
-      })
-      .catch(error => {
-        console.error('Ошибка загрузки счетчика:', error);
-        counterEl.textContent = '-';
-      });
-  });
+    // Ссылка на узел, где будет храниться число просмотров (назовем его pantherViews)
+    const counterRef = ref(db, 'pantherViews');
+    const counterEl = document.getElementById('viewCounter');
+
+    // Безопасное увеличение счетчика через транзакцию
+    runTransaction(counterRef, (currentData) => {
+      // Если данных еще нет, начинаем с 1, иначе прибавляем 1
+      return (currentData || 0) + 1;
+    }).then((result) => {
+      if (result.committed) {
+        // Форматируем результат (например: 1 245) и выводим
+        counterEl.textContent = result.snapshot.val().toLocaleString('ru-RU');
+      }
+    }).catch((error) => {
+      console.error("Ошибка Firebase:", error);
+      counterEl.textContent = '-';
+    });
+  } catch (error) {
+    console.error("Ошибка инициализации:", error);
+  }
 </script>
 </body>
 </html>
