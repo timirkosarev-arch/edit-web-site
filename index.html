@@ -9,9 +9,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #0a0b08;
+    --bg: #080906;
     --panel: #131510;
     --gold: #c9a227;
+    --gold-soft: #e3bb34;
     --gold-dim: #8a7128;
     --text: #f1ede0;
     --text-dim: #8f8c7c;
@@ -24,7 +25,9 @@
 
   body{
     margin:0;
-    background: radial-gradient(ellipse 120% 60% at 50% 0%, #171911 0%, var(--bg) 55%);
+    background:
+      radial-gradient(ellipse 100% 40% at 15% 0%, rgba(201,162,39,0.05), transparent 60%),
+      radial-gradient(ellipse 120% 60% at 50% 0%, #171911 0%, var(--bg) 55%);
     color: var(--text);
     font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -46,16 +49,17 @@
     mix-blend-mode: overlay;
   }
 
+  /* ---------- header ---------- */
   header{
     position: sticky;
     top: 0;
-    z-index: 20;
+    z-index: 30;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 18px 20px;
-    background: linear-gradient(to bottom, rgba(10,11,8,0.92), rgba(10,11,8,0.7) 70%, transparent);
-    backdrop-filter: blur(6px);
+    background: linear-gradient(to bottom, rgba(8,9,6,0.95), rgba(8,9,6,0.75) 70%, transparent);
+    backdrop-filter: blur(8px);
   }
   .mark{ display:flex; align-items:center; gap:10px; }
   .mark svg{ width:22px; height:22px; flex-shrink:0; }
@@ -66,12 +70,8 @@
     text-transform: uppercase;
     font-weight: 500;
   }
-  
-  .header-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+
+  .header-info { display: flex; align-items: center; gap: 8px; }
   .count-pill{
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
@@ -81,17 +81,12 @@
     border-radius: 100px;
     padding: 5px 11px;
   }
-  .view-pill {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--text-dim);
-    border-color: rgba(241,237,224,0.15);
-  }
+  .view-pill { display: flex; align-items: center; gap: 6px; color: var(--text-dim); border-color: rgba(241,237,224,0.15); }
   .view-pill svg { opacity: 0.7; }
   .view-pill span { color: var(--text); font-weight: 500; }
 
-  .hero{ position: relative; padding: 8px 20px 28px; z-index: 2; }
+  /* ---------- hero ---------- */
+  .hero{ position: relative; padding: 8px 20px 24px; z-index: 2; }
   .hero .eyebrow{
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
@@ -109,25 +104,79 @@
     letter-spacing: -0.01em;
   }
   .hero h1 em{ font-style: italic; font-weight: 300; color: var(--gold); }
-  .hero p{
-    color: var(--text-dim);
-    font-size: 14px;
-    max-width: 30ch;
-    margin: 0;
-    line-height: 1.5;
-  }
+  .hero p{ color: var(--text-dim); font-size: 14px; max-width: 30ch; margin: 0; line-height: 1.5; }
   .claw{ display:block; width: 84px; height: 14px; margin: 22px 0 0; opacity: 0.8; }
 
-  main{
+  /* ---------- section tabs ---------- */
+  .tabs{
+    position: sticky;
+    top: 62px;
+    z-index: 25;
+    display: flex;
+    gap: 8px;
+    padding: 10px 20px;
+    margin-bottom: 8px;
+    background: linear-gradient(to bottom, rgba(8,9,6,0.9), rgba(8,9,6,0.5));
+    backdrop-filter: blur(6px);
+  }
+  .tabs a{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text-dim);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 8px 16px;
+    transition: color .25s ease, border-color .25s ease, background .25s ease;
+  }
+  .tabs a:hover, .tabs a:focus-visible{
+    color: var(--bg);
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+
+  /* ---------- section heading ---------- */
+  .section-head{
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding: 30px 20px 18px;
+  }
+  .section-head .roman{
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 30px;
+    color: var(--gold-dim);
+  }
+  .section-head h2{
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 26px;
+    margin: 0;
+  }
+  .section-head .tally{
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  main, .photo-grid-wrap{
     position: relative;
     z-index: 2;
-    padding: 8px 0 40px;
+  }
+
+  .grid{
+    padding: 0 20px 8px;
     display: flex;
     flex-direction: column;
     gap: 34px;
   }
 
-  .card{ padding: 0 20px; }
   .card .meta{ display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
   .card .num{
     font-family: 'Fraunces', serif;
@@ -141,7 +190,7 @@
 
   .frame{
     position: relative;
-    border-radius: 14px;
+    border-radius: 16px;
     overflow: hidden;
     border: 1px solid var(--line);
     background: var(--panel);
@@ -167,7 +216,7 @@
   }
   .frame:active::before, .frame:focus-within::before{ opacity: 1; }
 
-  video{
+  video, .frame img{
     width: 100%;
     aspect-ratio: 9 / 16;
     display: block;
@@ -194,27 +243,28 @@
     z-index: 2;
   }
 
-  /* ---------- Секция комментариев ---------- */
-  .comments-section {
-    position: relative;
-    z-index: 2;
-    padding: 20px 20px 60px;
+  /* photo grid specific: 2 across even on mobile */
+  .photo-grid{
+    padding: 0 20px 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
   }
-  .comments-section h2 {
-    font-family: 'Fraunces', serif;
-    font-size: 28px;
-    margin: 0 0 24px;
-    color: var(--gold);
-    font-weight: 500;
+  .photo-grid .frame img{ aspect-ratio: 3 / 4; }
+  .photo-grid .card .name{ font-size: 15px; }
+  .photo-grid .card .num{ font-size: 20px; }
+
+  .divider{
+    height: 1px;
+    margin: 10px 20px 0;
+    background: linear-gradient(to right, transparent, var(--line) 20%, var(--line) 80%, transparent);
   }
-  
-  .comment-form {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin-bottom: 40px;
-    max-width: 600px;
-  }
+
+  /* ---------- comments ---------- */
+  .comments-section { position: relative; z-index: 2; padding: 20px 20px 60px; }
+  .comments-section h2 { font-family: 'Fraunces', serif; font-size: 26px; margin: 0 0 24px; color: var(--gold); font-weight: 500; }
+
+  .comment-form { display: flex; flex-direction: column; gap: 14px; margin-bottom: 40px; max-width: 600px; }
   .comment-form input, .comment-form textarea {
     background: rgba(19, 21, 16, 0.8);
     border: 1px solid var(--line);
@@ -227,12 +277,8 @@
     transition: border-color 0.3s;
     resize: vertical;
   }
-  .comment-form input::placeholder, .comment-form textarea::placeholder {
-    color: var(--text-dim);
-  }
-  .comment-form input:focus, .comment-form textarea:focus {
-    border-color: rgba(201,162,39,0.4);
-  }
+  .comment-form input::placeholder, .comment-form textarea::placeholder { color: var(--text-dim); }
+  .comment-form input:focus, .comment-form textarea:focus { border-color: rgba(201,162,39,0.4); }
   .comment-form button {
     background: var(--gold);
     color: var(--bg);
@@ -248,20 +294,10 @@
     align-self: flex-start;
     transition: background-color 0.3s;
   }
-  .comment-form button:hover:not(:disabled) {
-    background: #e3bb34;
-  }
-  .comment-form button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  .comment-form button:hover:not(:disabled) { background: var(--gold-soft); }
+  .comment-form button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .comments-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    max-width: 800px;
-  }
+  .comments-list { display: flex; flex-direction: column; gap: 20px; max-width: 800px; }
   .comment-box {
     background: rgba(19, 21, 16, 0.5);
     border: 1px solid var(--line);
@@ -269,39 +305,12 @@
     padding: 20px;
     animation: fadeIn 0.4s ease forwards;
   }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .comment-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 10px;
-    gap: 15px;
-  }
-  .comment-author {
-    font-family: 'Fraunces', serif;
-    font-size: 17px;
-    color: var(--gold-dim);
-  }
-  .comment-date {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-  }
-  .comment-text {
-    font-size: 15px;
-    line-height: 1.6;
-    color: var(--text);
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .no-comments {
-    color: var(--text-dim);
-    font-style: italic;
-    font-size: 15px;
-  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .comment-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 15px; }
+  .comment-author { font-family: 'Fraunces', serif; font-size: 17px; color: var(--gold-dim); }
+  .comment-date { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); }
+  .comment-text { font-size: 15px; line-height: 1.6; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+  .no-comments { color: var(--text-dim); font-style: italic; font-size: 15px; }
 
   footer{
     position: relative;
@@ -322,15 +331,20 @@
     .mark svg{ width:26px; height:26px; }
     .mark span{ font-size: 19px; }
 
-    .hero, .comments-section {
+    .tabs{ top: 78px; padding: 12px 56px; }
+
+    .hero, .comments-section, .section-head, .grid, .photo-grid, .divider{
       max-width: 1280px;
-      margin: 0 auto;
+      margin-left: auto;
+      margin-right: auto;
       padding-left: 56px;
       padding-right: 56px;
     }
+    .divider{ padding: 0; }
+
     .hero{
       padding-top: 40px;
-      padding-bottom: 56px;
+      padding-bottom: 40px;
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
       align-items: end;
@@ -341,21 +355,18 @@
     .hero p{ max-width: 34ch; font-size: 15px; }
     .hero .claw{ grid-column: 1; margin-top: 26px; }
 
-    main{
-      max-width: 1280px;
-      margin: 0 auto;
+    .grid{
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 44px 32px;
-      padding: 8px 56px 80px;
+      padding-top: 8px;
+      padding-bottom: 20px;
     }
-    .card{ padding: 0; }
-    .card.featured{
-      grid-column: span 2;
-      grid-row: span 2;
-    }
+    .card.featured{ grid-column: span 2; grid-row: span 2; }
     .card.featured .frame{ height: 100%; }
     .card.featured video{ height: 100%; aspect-ratio: auto; }
+
+    .photo-grid{ grid-template-columns: repeat(4, 1fr); gap: 28px; padding-top: 8px; padding-bottom: 20px; }
 
     .frame{ transition: transform .35s ease, box-shadow .35s ease; }
     .frame:hover{
@@ -365,12 +376,13 @@
     .frame:hover::before{ opacity: 1; }
 
     .card .name{ font-size: 20px; }
+    .photo-grid .card .name{ font-size: 16px; }
 
     footer{ padding: 44px 56px 64px; }
   }
 
   @media (min-width: 1280px){
-    main, .hero, .comments-section { max-width: 1400px; }
+    .grid, .photo-grid, .hero, .comments-section, .section-head, .divider{ max-width: 1400px; }
   }
 </style>
 </head>
@@ -394,14 +406,14 @@
       </svg>
       <span id="viewCounter">...</span>
     </div>
-    <div class="count-pill">04 / видео</div>
+    <div class="count-pill">06 / медиа</div>
   </div>
 </header>
 
 <section class="hero">
   <div class="eyebrow">Полная подборка</div>
   <h1>Пантера<br><em>Уфф</em></h1>
-  <p>Ночная серия. Четыре кадра, снятых на грани тишины и звука.</p>
+  <p>Ночная серия. Четыре кадра в движении и два — в тишине.</p>
   <svg class="claw" viewBox="0 0 84 14" fill="none">
     <path d="M1 13 L20 1" stroke="#c9a227" stroke-width="1.4" stroke-linecap="round"/>
     <path d="M10 13 L29 1" stroke="#c9a227" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
@@ -409,7 +421,19 @@
   </svg>
 </section>
 
-<main>
+<nav class="tabs">
+  <a href="#videos">Видео</a>
+  <a href="#photos">Фото</a>
+  <a href="#comments-section">Мнения</a>
+</nav>
+
+<section class="section-head" id="videos">
+  <span class="roman">I</span>
+  <h2>Видео</h2>
+  <span class="tally">04</span>
+</section>
+
+<main class="grid">
   <div class="card featured">
     <div class="meta">
       <span class="num">I</span>
@@ -460,14 +484,44 @@
   </div>
 </main>
 
+<div class="divider"></div>
+
+<section class="section-head" id="photos">
+  <span class="roman">II</span>
+  <h2>Фото</h2>
+  <span class="tally">02</span>
+</section>
+
+<section class="photo-grid">
+  <div class="card">
+    <div class="meta">
+      <span class="num">I</span>
+      <span class="name">Пантера</span>
+    </div>
+    <div class="frame">
+      <img src="https://phantera.b-cdn.net/WhatsApp%20Image%202026-08-28%20at%2023.03.48.jpeg" alt="Пантера — фото I" loading="lazy">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="meta">
+      <span class="num">II</span>
+      <span class="name">Пантера</span>
+    </div>
+    <div class="frame">
+      <img src="https://phantera.b-cdn.net/WhatsApp%20Image%202026-08-28%20at%2023.03.49.jpeg" alt="Пантера — фото II" loading="lazy">
+    </div>
+  </div>
+</section>
+
 <section class="comments-section" id="comments-section">
   <h2>Мнения</h2>
   <form id="commentForm" class="comment-form">
     <input type="text" id="commentName" placeholder="Ваше имя" required maxlength="50">
-    <textarea id="commentText" placeholder="Что думаете о видео?" required rows="3" maxlength="500"></textarea>
+    <textarea id="commentText" placeholder="Что думаете?" required rows="3" maxlength="500"></textarea>
     <button type="submit" id="submitBtn">Оставить комментарий</button>
   </form>
-  
+
   <div id="commentsList" class="comments-list">
     <div class="no-comments">Загрузка комментариев...</div>
   </div>
@@ -479,28 +533,24 @@
 
 <!-- Подключаем Firebase -->
 <script type="module">
-  // Импортируем нужные модули (теперь с поддержкой отправки и чтения списков)
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getDatabase, ref, runTransaction, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-  // ВАЖНО: Вставь сюда настройки своего Firebase проекта!
   const firebaseConfig = {
     apiKey: "AIzaSyApnoSkcthpVPcMSAJXL-PFT-UpEi9ZdoI",
-  authDomain: "exaroton-65e4e.firebaseapp.com",
-  databaseURL: "https://exaroton-65e4e-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "exaroton-65e4e",
-  storageBucket: "exaroton-65e4e.firebasestorage.app",
-  messagingSenderId: "175992933890",
-  appId: "1:175992933890:web:5196918da3f79520e5211b",
-  measurementId: "G-V8RF5D60MH"
+    authDomain: "exaroton-65e4e.firebaseapp.com",
+    databaseURL: "https://exaroton-65e4e-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "exaroton-65e4e",
+    storageBucket: "exaroton-65e4e.firebasestorage.app",
+    messagingSenderId: "175992933890",
+    appId: "1:175992933890:web:5196918da3f79520e5211b",
+    measurementId: "G-V8RF5D60MH"
   };
 
   try {
-    // Инициализация
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    
-    // --- 1. СЧЕТЧИК ПРОСМОТРОВ ---
+
     const counterRef = ref(db, 'pantherViews');
     const counterEl = document.getElementById('viewCounter');
 
@@ -515,15 +565,13 @@
       counterEl.textContent = '-';
     });
 
-    // --- 2. КОММЕНТАРИИ ---
     const commentsRef = ref(db, 'pantherComments');
     const commentsList = document.getElementById('commentsList');
     const commentForm = document.getElementById('commentForm');
     const submitBtn = document.getElementById('submitBtn');
 
-    // Функция защиты от XSS (чтобы нельзя было вставить зловредный код)
     function escapeHTML(str) {
-      return str.replace(/[&<>'"]/g, 
+      return str.replace(/[&<>'"]/g,
         tag => ({
             '&': '&amp;',
             '<': '&lt;',
@@ -534,20 +582,17 @@
       );
     }
 
-    // Слушаем изменения в базе данных в реальном времени
     onValue(commentsRef, (snapshot) => {
       const data = snapshot.val();
-      commentsList.innerHTML = ''; // Очищаем список
+      commentsList.innerHTML = '';
 
       if (data) {
-        // Преобразуем объект в массив и сортируем (новые сверху)
         const commentsArray = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
-        
+
         commentsArray.forEach(c => {
           const div = document.createElement('div');
           div.className = 'comment-box';
-          
-          // Форматируем дату
+
           const dateObj = new Date(c.timestamp);
           const dateStr = dateObj.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
           const timeStr = dateObj.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
@@ -566,29 +611,25 @@
       }
     });
 
-    // Отправка нового комментария
     commentForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      
+
       const nameInput = document.getElementById('commentName');
       const textInput = document.getElementById('commentText');
       const name = nameInput.value.trim();
       const text = textInput.value.trim();
-      
+
       if (!name || !text) return;
 
-      // Блокируем кнопку, чтобы не отправили дважды
       submitBtn.disabled = true;
       submitBtn.textContent = 'Отправка...';
 
-      // Создаем новую запись
       const newCommentRef = push(commentsRef);
       set(newCommentRef, {
         name: name,
         text: text,
         timestamp: Date.now()
       }).then(() => {
-        // Очищаем только текст (имя можно оставить для удобства)
         textInput.value = '';
         submitBtn.disabled = false;
         submitBtn.textContent = 'Оставить комментарий';
