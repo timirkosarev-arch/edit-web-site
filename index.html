@@ -140,6 +140,7 @@ const store={
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 };
 let cfg=Object.assign({key:"",url:"api.php",model:"gpt-4o",sys:"Ты Venus AI — дружелюбный и умный ИИ-помощник. Отвечай на языке пользователя."},store.get("venus_cfg",{}));
+if(/drakezakuru\.com/.test(cfg.url)){cfg.url="api.php";cfg.key="";store.set("venus_cfg",cfg)}
 let chats=store.get("venus_chats",[]);
 let cur=null,busy=false,ctrl=null;
 const isProxy=()=>/\.php$/.test(cfg.url);
