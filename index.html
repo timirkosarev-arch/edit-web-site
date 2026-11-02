@@ -124,7 +124,7 @@ textarea::placeholder{color:var(--muted)}
   <div class="card">
     <h2>Настройки</h2>
     <label>API-ключ<input id="kKey" type="password" placeholder="sk-..." autocomplete="off"></label>
-    <label>Endpoint<input id="kUrl" placeholder="https://api.drakezakuru.com/v1"></label>
+    <label>Endpoint<input id="kUrl" placeholder="api.php"></label>
     <label>Модель<input id="kModel" placeholder="например gpt-4o" list="models"></label>
     <datalist id="models"></datalist>
     <label>Системная инструкция<input id="kSys" placeholder="Ты Venus AI — дружелюбный помощник."></label>
@@ -139,9 +139,12 @@ const store={
   get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 };
-let cfg=Object.assign({key:"sk-drake-AOd9SZp3bhwoOI8a3zED2wIYj2WgG9rDM8LpQuJof80",url:"https://api.drakezakuru.com/v1",model:"gpt-4o",sys:"Ты Venus AI — дружелюбный и умный ИИ-помощник. Отвечай на языке пользователя."},store.get("venus_cfg",{}));
+let cfg=Object.assign({key:"",url:"api.php",model:"gpt-4o",sys:"Ты Venus AI — дружелюбный и умный ИИ-помощник. Отвечай на языке пользователя."},store.get("venus_cfg",{}));
 let chats=store.get("venus_chats",[]);
 let cur=null,busy=false,ctrl=null;
+const isProxy=()=>/\.php$/.test(cfg.url);
+const ep=p=>isProxy()?cfg.url+"?p="+p:cfg.url.replace(/\/$/,"")+"/"+p;
+const auth=k=>k?{Authorization:"Bearer "+k}:{};
 
 const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 function md(t){
@@ -201,7 +204,7 @@ function closeSide(){$("side").classList.remove("on");$("back").classList.remove
 async function send(text){
   text=text.trim();
   if(!text||busy)return;
-  if(!cfg.key){openSet();return}
+  if(!cfg.key&&!isProxy()){openSet();return}
   let c=active();
   if(!c){c={id:Date.now(),title:text.slice(0,40),messages:[]};chats.unshift(c);cur=c.id}
   c.messages.push({role:"user",content:text});
@@ -216,9 +219,9 @@ async function send(text){
     const msgs=[];
     if(cfg.sys)msgs.push({role:"system",content:cfg.sys});
     c.messages.forEach(m=>msgs.push({role:m.role,content:m.content}));
-    const r=await fetch(cfg.url.replace(/\/$/,"")+"/chat/completions",{
+    const r=await fetch(ep("chat/completions"),{
       method:"POST",signal:ctrl.signal,
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+cfg.key},
+      headers:Object.assign({"Content-Type":"application/json"},auth(cfg.key)),
       body:JSON.stringify({model:cfg.model,messages:msgs,stream:true})
     });
     if(!r.ok){let t="";try{t=await r.text()}catch(e){}throw new Error("Ошибка "+r.status+(t?": "+t.slice(0,200):""))}
@@ -268,12 +271,12 @@ $("back").onclick=closeSide;
 $("setBtn").onclick=()=>{openSet();closeSide()};
 $("cancel").onclick=()=>$("mod").classList.remove("on");
 $("save").onclick=()=>{
-  cfg={key:$("kKey").value.trim(),url:$("kUrl").value.trim()||"https://api.drakezakuru.com/v1",model:$("kModel").value.trim()||"gpt-4o",sys:$("kSys").value.trim()};
+  cfg={key:$("kKey").value.trim(),url:$("kUrl").value.trim()||"api.php",model:$("kModel").value.trim()||"gpt-4o",sys:$("kSys").value.trim()};
   store.set("venus_cfg",cfg);$("mod").classList.remove("on");
 };
 $("loadM").onclick=async()=>{
   try{
-    const r=await fetch($("kUrl").value.trim().replace(/\/$/,"")+"/models",{headers:{Authorization:"Bearer "+$("kKey").value.trim()}});
+    const u=$("kUrl").value.trim()||"api.php";const r=await fetch(/\.php$/.test(u)?u+"?p=models":u.replace(/\/$/,"")+"/models",{headers:auth($("kKey").value.trim())});
     const j=await r.json();
     $("models").innerHTML=(j.data||[]).map(m=>`<option value="${esc(m.id)}">`).join("");
     $("loadM").textContent="Список загружен — выберите в поле «Модель»";
@@ -286,7 +289,7 @@ $("wrap").addEventListener("click",e=>{
     (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{c.textContent="Скопировано";setTimeout(()=>c.textContent="Копировать",1500)}).catch(()=>{})}
 });
 renderList();renderMsgs();upd();
-if(!cfg.key)setTimeout(openSet,400);
+if(!cfg.key&&!isProxy())setTimeout(openSet,400);
 </script>
 </body>
 </html>
